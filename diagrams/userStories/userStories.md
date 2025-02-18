@@ -275,3 +275,27 @@
   | **Then**  | The Jeep is added to the vehicles (the price is deducted from the money) |
 
 </details>
+
+<br>
+
+<details>
+  <summary><b>Buy (and) Place Road</b></summary>
+
+<br>
+
+  **As a:** (current) player  <br>
+  **I want to:** buy and place a road
+
+  |       |                                                           |
+  |-------|-----------------------------------------------------------|
+  | **Given** | The Shop window is open |
+  | **When**  | The "Road" icon is clicked |
+  | **Then**  | The road is selected and Shop window closes|
+
+  |       |                                                           |
+  |-------|-----------------------------------------------------------|
+  | **Given** | The Shop window is closed and the road is selected |
+  | **When**  | A valid tile is clicked (invalid tiles: rock, water) |
+  | **Then**  | The road is placed on the selected tile (the price of the road is deducted from the money)|
+
+</details>
