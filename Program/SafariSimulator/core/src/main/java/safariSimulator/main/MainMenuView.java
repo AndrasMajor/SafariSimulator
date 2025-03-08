@@ -2,36 +2,81 @@ package safariSimulator.main;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.utils.viewport.Viewport;
 
 /** First screen of the application. Displayed after the application is created. */
 public class MainMenuView implements Screen {
+    private Texture backgroundTexture;
+    private SpriteBatch batch;
 
-    private Stage stage;
     private Skin skin;
-    private TextButton loadButton;
+    private Stage stage;
+    private Viewport viewport;
+    private OrthographicCamera camera;
 
     public MainMenuView() {
-        stage = new Stage();
+        // BACKGROUND
+        backgroundTexture = new Texture(Gdx.files.internal("menuBackground.png"));
+        batch = new SpriteBatch();
+
+
+        // CAMERA, VIEWPORT, STAGE
+        camera = new OrthographicCamera();
+        viewport = new FitViewport(800, 600, camera);
+        stage = new Stage(viewport);
         Gdx.input.setInputProcessor(stage);
 
         skin = new Skin(Gdx.files.internal("uiskin.json"));
 
-        loadButton = new TextButton("Load Game", skin);
-        loadButton.setPosition(Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() / 2);
+        // BUTTON'S CONTAINER
+        Window container = new Window("", skin);
+        container.setSize(300, 200);
+        container.setPosition(
+            Gdx.graphics.getWidth() / 2f - container.getWidth() / 2,
+            Gdx.graphics.getHeight() / 2f - container.getHeight() / 2
+        );
+        container.setMovable(false);
 
-        loadButton.addListener(new ClickListener() {
+        // BUTTONS, TITLE
+        Label title = new Label("Hi Manager!", skin);
+        TextButton loadGameButton = new TextButton("Load Game", skin);
+        TextButton newGameButton = new TextButton("New Game", skin);
+
+        TextButton.TextButtonStyle textButtonStyle = new TextButton.TextButtonStyle();
+        // LISTENERS
+        loadGameButton.addListener(new ClickListener() {
+            @Override
+            public void clicked (InputEvent event, float x, float y) {
+                System.out.println("Csicska Bundáskenyér liga");
+            }
+        });
+        loadGameButton.addListener(new ClickListener() {
             @Override
             public void clicked (InputEvent event, float x, float y) {
                 System.out.println("Csicska Bundáskenyér liga");
             }
         });
 
-        stage.addActor(loadButton);
+        container.row();
+        container.add(title).pad(20);
+        container.row();
+        container.add(loadGameButton).pad(10);
+        container.row();
+        container.add(newGameButton).pad(10);
+
+
+        stage.addActor(container);
     }
 
     @Override
@@ -41,12 +86,17 @@ public class MainMenuView implements Screen {
 
     @Override
     public void render(float delta) {
+        batch.begin();
+        batch.draw(backgroundTexture, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        batch.end();
+
+        stage.act(delta);
         stage.draw();
     }
 
     @Override
     public void resize(int width, int height) {
-        // Resize your screen here. The parameters represent the new window size.
+        viewport.update(width, height, true);
     }
 
     @Override
@@ -66,6 +116,8 @@ public class MainMenuView implements Screen {
 
     @Override
     public void dispose() {
-        // Destroy screen's assets here.
+        batch.dispose();
+        skin.dispose();
+        stage.dispose();
     }
 }
