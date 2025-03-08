@@ -1,4 +1,4 @@
-package safariSimulator.main;
+package safariSimulator.main.Views;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
@@ -16,7 +16,7 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
 /** First screen of the application. Displayed after the application is created. */
-public class MainMenuView implements Screen {
+public class MenuView implements Screen {
     private Texture backgroundTexture;
     private SpriteBatch batch;
 
@@ -25,7 +25,7 @@ public class MainMenuView implements Screen {
     private Viewport viewport;
     private OrthographicCamera camera;
 
-    public MainMenuView() {
+    public MenuView() {
         // BACKGROUND
         backgroundTexture = new Texture(Gdx.files.internal("menuBackground.png"));
         batch = new SpriteBatch();
