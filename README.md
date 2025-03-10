@@ -1,6 +1,5 @@
 # Safari Simulator
 
-# Test
 
 
 ## Getting started
