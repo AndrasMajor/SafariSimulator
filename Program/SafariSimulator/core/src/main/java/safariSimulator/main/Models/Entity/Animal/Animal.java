@@ -17,9 +17,6 @@ public abstract class Animal extends Entity {
     // The age of the animal
     private int age;
 
-    // The gender of the animal (randomly assigned)
-    private Gender gender;
-
     // The health status of the animal
     private int health;
 
@@ -38,8 +35,6 @@ public abstract class Animal extends Entity {
     // The leader of the animal (if part of a herd or pack)
     private Animal leader;
 
-    // Random object for generating gender
-    private static final Random random = new Random();
 
     /**
      * Constructor that initializes the animal with a given position.
@@ -50,7 +45,6 @@ public abstract class Animal extends Entity {
     public Animal(Point pos) {
         super(pos);
         this.age = 0;
-        this.gender = random.nextBoolean() ? Gender.MALE : Gender.FEMALE;
         this.health = 100;  // Default full health
         this.foodLevel = 100;  // Default full food level
         this.waterLevel = 100;  // Default full water level
@@ -73,15 +67,6 @@ public abstract class Animal extends Entity {
         if (this.age < this.maxAge) {
             this.age++;
         }
-    }
-
-    /**
-     * Gets the gender of the animal.
-     *
-     * @return The gender of the animal.
-     */
-    public Gender getGender() {
-        return this.gender;
     }
 
     /**
