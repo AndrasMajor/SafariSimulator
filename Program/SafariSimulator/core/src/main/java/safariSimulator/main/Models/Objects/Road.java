@@ -8,5 +8,6 @@ public class Road extends Object {
     public Road(Point point, RoadDirection from, RoadDirection to) {
         super(point);
         direction = new RoadDirection[]{from, to};
+        this.price = 80;
     }
 }
