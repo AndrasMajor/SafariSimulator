@@ -21,6 +21,6 @@ public abstract class Herbivore extends Animal {
     }
 
     public void graze() {
-        //TODO: Implement the grazing method for herbivores
+        this.foodLevel = Math.min(this.foodLevel + 10, 100);
     }
 }
