@@ -4,6 +4,7 @@ import safariSimulator.main.Models.Point;
 
 public abstract class Object {
     private Point position;
+    public int price;
 
     public Object(Point point) {
         this.position = point;

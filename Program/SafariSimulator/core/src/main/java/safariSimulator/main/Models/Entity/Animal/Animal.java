@@ -1,6 +1,6 @@
 package safariSimulator.main.Models.Entity.Animal;
 
-import safariSimulator.main.Models.Biome.Tile.Tile;
+import safariSimulator.main.Models.Tile.Tile;
 import safariSimulator.main.Models.Entity.Entity;
 import safariSimulator.main.Models.Point;
 
@@ -34,6 +34,8 @@ public abstract class Animal extends Entity {
 
     // The leader of the animal (if part of a herd or pack)
     private Animal leader;
+
+    public  int price = 75;
 
 
     /**
