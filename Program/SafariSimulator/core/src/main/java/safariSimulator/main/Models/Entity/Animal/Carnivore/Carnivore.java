@@ -22,7 +22,7 @@ public abstract class Carnivore extends Animal {
 
 
     public void hunt(){
-        //TODO: Implement the hunting logic for carnivores
+        this.foodLevel = Math.min(this.foodLevel + 10, 100);
     }
 }
 

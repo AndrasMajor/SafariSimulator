@@ -21,7 +21,7 @@ public abstract class Animal extends Entity {
     private int health;
 
     // The current food level of the animal
-    private int foodLevel;
+    protected int foodLevel;
 
     // The current water level of the animal
     private int waterLevel;
@@ -48,6 +48,7 @@ public abstract class Animal extends Entity {
         this.health = 100;  // Default full health
         this.foodLevel = 100;  // Default full food level
         this.waterLevel = 100;  // Default full water level
+        this.leader = null;
     }
 
     /**

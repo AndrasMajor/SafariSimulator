@@ -11,7 +11,7 @@ public class Zebra extends Herbivore {
 
     /**
      * Constructor that initializes a zebra with a given position.
-     * It also sets the maximum age of the zebra to 70 years and its speed to 8.
+     * It also sets the maximum age of the zebra to 30 years and its speed to 8.
      *
      * @param pos The initial position of the zebra.
      */
