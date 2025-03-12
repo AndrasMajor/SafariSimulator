@@ -1,0 +1,16 @@
+package safariSimulator.main.Models.Objects;
+
+import safariSimulator.main.Models.Point;
+
+public abstract class Object {
+    private Point position;
+
+    public Object(Point point) {
+        this.position = point;
+    }
+
+    public Point getPosition() {
+        Point out = new Point(this.position.getX(), this.position.getY());
+        return out;
+    }
+}
