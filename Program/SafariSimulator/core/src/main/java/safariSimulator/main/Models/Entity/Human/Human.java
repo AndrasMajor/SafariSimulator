@@ -1,4 +1,5 @@
 package safariSimulator.main.Models.Entity.Human;
 
 public class Human {
+    // TODO COMMENT***
 }
