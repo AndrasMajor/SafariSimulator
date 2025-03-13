@@ -15,21 +15,24 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
-/** First screen of the application. Displayed after the application is created. */
-public class MenuView implements Screen {
+public class MainScreen implements Screen {
     private Texture backgroundTexture;
     private SpriteBatch batch;
-
-    private Skin skin;
     private Stage stage;
     private Viewport viewport;
     private OrthographicCamera camera;
+    private Skin skin = new Skin(Gdx.files.internal("uiskin.json"));
 
-    public MenuView() {
+    //-------- CONTAINERS ----------
+    private MenuContainer menuContainer;
+    private LoadGameContainer loadGameContainer;
+    private NewGameConteiner newGameConteiner;
+    //------------------------------
+
+    public MainScreen() {
         // BACKGROUND
         backgroundTexture = new Texture(Gdx.files.internal("menuBackground.png"));
         batch = new SpriteBatch();
-
 
         // CAMERA, VIEWPORT, STAGE
         camera = new OrthographicCamera();
@@ -37,46 +40,45 @@ public class MenuView implements Screen {
         stage = new Stage(viewport);
         Gdx.input.setInputProcessor(stage);
 
-        skin = new Skin(Gdx.files.internal("uiskin.json"));
+        // INIT CONTAINERS
+        menuContainer = new MenuContainer(skin);
+        loadGameContainer = new LoadGameContainer(skin);
+        newGameConteiner = new NewGameConteiner(skin);
 
-        // BUTTON'S CONTAINER
-        Window container = new Window("", skin);
-        container.setSize(300, 200);
-        container.setPosition(
-            Gdx.graphics.getWidth() / 2f - container.getWidth() / 2,
-            Gdx.graphics.getHeight() / 2f - container.getHeight() / 2
-        );
-        container.setMovable(false);
-
-        // BUTTONS, TITLE
-        Label title = new Label("Hi Manager!", skin);
-        TextButton loadGameButton = new TextButton("Load Game", skin);
-        TextButton newGameButton = new TextButton("New Game", skin);
-
-        TextButton.TextButtonStyle textButtonStyle = new TextButton.TextButtonStyle();
         // LISTENERS
-        loadGameButton.addListener(new ClickListener() {
+        menuContainer.loadGameButton.addListener(new ClickListener() {
             @Override
-            public void clicked (InputEvent event, float x, float y) {
-                System.out.println("Csicska Bundáskenyér liga");
+            public void clicked(InputEvent event, float x, float y) {
+                stage.clear();
+                stage.addActor(loadGameContainer);
             }
         });
-        loadGameButton.addListener(new ClickListener() {
+        menuContainer.newGameButton.addListener(new ClickListener() {
             @Override
-            public void clicked (InputEvent event, float x, float y) {
-                System.out.println("Csicska Bundáskenyér liga");
+            public void clicked(InputEvent event, float x, float y) {
+                stage.clear();
+                stage.addActor(newGameConteiner);
             }
         });
 
-        container.row();
-        container.add(title).pad(20);
-        container.row();
-        container.add(loadGameButton).pad(10);
-        container.row();
-        container.add(newGameButton).pad(10);
+        loadGameContainer.backButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                stage.clear();
+                stage.addActor(menuContainer);
+            }
+        });
+        newGameConteiner.backButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                stage.clear();
+                stage.addActor(menuContainer);
+            }
+        });
 
+        // ADD MENUCONTAINER TO STAGE
+        stage.addActor(menuContainer);
 
-        stage.addActor(container);
     }
 
     @Override
