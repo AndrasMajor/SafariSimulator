@@ -3,7 +3,7 @@ package safariSimulator.main.Models.MapGeneration;
 import java.util.Random;
 
 public class MapGenerator {
-    public static final int SIZE = 500;
+    public static final int SIZE = 50;
     private static final double SCALE = 0.0002; // Smoother terrain
 
     private final int[][] tileMap; // Stores values: -1 (Water), 0 (Grass), 100 (Dry)
@@ -66,10 +66,5 @@ public class MapGenerator {
             case 100 -> 'D'; // Dry land
             default -> '?';
         };
-    }
-
-    public static void main(String[] args) {
-        MapGenerator generator = new MapGenerator();
-        generator.printMap(); // Prints a rough map view in console
     }
 }
