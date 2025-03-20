@@ -76,6 +76,7 @@ public class MainScreen implements Screen {
             }
         });
 
+
         // ADD MENUCONTAINER TO STAGE
         stage.addActor(menuContainer);
 

@@ -8,6 +8,12 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import safariSimulator.main.Models.Map;
@@ -27,12 +33,21 @@ public class MapScreen extends InputAdapter implements Screen {
 
     private Viewport minimapViewport;
     private OrthographicCamera minimapCamera;
-    private static final int MINIMAP_SIZE = 100; // Kisebb minimap (100x100 px)
+    private static final int MINIMAP_SIZE = 100;
     private static final float MINIMAP_SCALE = 0.05f;
+
+    public Stage stage;
+    //private Skin skin;
+    public TextButton shopButton;
+    private boolean isShopVisible = false;
+
+    private Skin skin = new Skin(Gdx.files.internal("uiskin.json"));
+    public ShopContainer shopContainer;
 
     public MapScreen() {
         map = new Map();
         map.generateMap();
+        shopContainer = new ShopContainer(skin, this);
     }
 
     @Override
@@ -49,12 +64,33 @@ public class MapScreen extends InputAdapter implements Screen {
         minimapCamera.setToOrtho(false, Gdx.graphics.getWidth() * MINIMAP_SCALE, Gdx.graphics.getHeight() * MINIMAP_SCALE);
 
         minimapViewport = new FitViewport(MINIMAP_SIZE, MINIMAP_SIZE, minimapCamera);
+
+        stage = new Stage(new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight()));
+        Gdx.input.setInputProcessor(stage);
+        skin = new Skin(Gdx.files.internal("uiskin.json"));
+
+        Table bottomBar = new Table();
+        bottomBar.setFillParent(true);
+        bottomBar.bottom();
+
+        shopButton = new TextButton("Shop", skin);
+        shopButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                stage.clear();
+                stage.addActor(shopContainer);
+            }
+        });
+
+
+        bottomBar.add(shopButton).pad(10).width(150).height(50).left();
+        stage.addActor(bottomBar);
     }
 
     @Override
     public void render(float delta) {
         handleInput(delta);
-        clampCamera(); // Kamera ne mehessen ki a térképről
+        clampCamera();
 
         camera.update();
         batch.setProjectionMatrix(camera.combined);
@@ -72,27 +108,34 @@ public class MapScreen extends InputAdapter implements Screen {
             batch.draw(tileTexture, tile.pos.getX() * 32, tile.pos.getY() * 32, 32, 32);
         }
         batch.end();
+
+        stage.act(delta);
+        stage.draw();
     }
 
     @Override
     public void resize(int width, int height) {
         camera.setToOrtho(false, width, height);
+        stage.getViewport().update(width, height, true);
     }
 
     @Override
-    public void pause() {
-    }
+    public void pause() {}
 
     @Override
-    public void resume() {
-    }
+    public void resume() {}
 
     @Override
-    public void hide() {
-    }
+    public void hide() {}
 
     @Override
     public void dispose() {
+        batch.dispose();
+        waterTexture.dispose();
+        sandTexture.dispose();
+        grassTexture.dispose();
+        stage.dispose();
+        skin.dispose();
     }
 
     private void handleInput(float delta) {
@@ -109,7 +152,6 @@ public class MapScreen extends InputAdapter implements Screen {
             camera.position.x += cameraSpeed * delta;
         }
 
-        // Zoom beállítása
         float targetZoom = camera.zoom;
 
         if (Gdx.input.isKeyPressed(Input.Keys.Q)) {
@@ -119,7 +161,6 @@ public class MapScreen extends InputAdapter implements Screen {
             targetZoom = Math.max(0.5f, targetZoom - zoomSpeed);
         }
 
-        // Interpoláció a simább zoomolás érdekében
         camera.zoom += (targetZoom - camera.zoom) * 0.4f;
     }
 
