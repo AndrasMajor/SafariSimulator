@@ -8,6 +8,8 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.utils.viewport.Viewport;
 import safariSimulator.main.Models.Map;
 import safariSimulator.main.Models.Tile.Tile;
 
@@ -23,6 +25,11 @@ public class MapScreen extends InputAdapter implements Screen {
     private float cameraSpeed = 200;
     private float zoomSpeed = 0.02f;
 
+    private Viewport minimapViewport;
+    private OrthographicCamera minimapCamera;
+    private static final int MINIMAP_SIZE = 100; // Kisebb minimap (100x100 px)
+    private static final float MINIMAP_SCALE = 0.05f;
+
     public MapScreen() {
         map = new Map();
         map.generateMap();
@@ -37,11 +44,17 @@ public class MapScreen extends InputAdapter implements Screen {
 
         camera = new OrthographicCamera();
         camera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+
+        minimapCamera = new OrthographicCamera();
+        minimapCamera.setToOrtho(false, Gdx.graphics.getWidth() * MINIMAP_SCALE, Gdx.graphics.getHeight() * MINIMAP_SCALE);
+
+        minimapViewport = new FitViewport(MINIMAP_SIZE, MINIMAP_SIZE, minimapCamera);
     }
 
     @Override
     public void render(float delta) {
         handleInput(delta);
+        clampCamera(); // Kamera ne mehessen ki a térképről
 
         camera.update();
         batch.setProjectionMatrix(camera.combined);
@@ -68,22 +81,18 @@ public class MapScreen extends InputAdapter implements Screen {
 
     @Override
     public void pause() {
-
     }
 
     @Override
     public void resume() {
-
     }
 
     @Override
     public void hide() {
-
     }
 
     @Override
     public void dispose() {
-
     }
 
     private void handleInput(float delta) {
@@ -101,12 +110,29 @@ public class MapScreen extends InputAdapter implements Screen {
         }
 
         // Zoom beállítása
+        float targetZoom = camera.zoom;
+
         if (Gdx.input.isKeyPressed(Input.Keys.Q)) {
-            camera.zoom += zoomSpeed;
+            targetZoom = Math.min(1f, targetZoom + zoomSpeed);
         }
         if (Gdx.input.isKeyPressed(Input.Keys.E)) {
-            camera.zoom -= zoomSpeed;
+            targetZoom = Math.max(0.5f, targetZoom - zoomSpeed);
         }
+
+        // Interpoláció a simább zoomolás érdekében
+        camera.zoom += (targetZoom - camera.zoom) * 0.4f;
     }
 
+    private void clampCamera() {
+        float halfWidth = camera.viewportWidth * camera.zoom / 2;
+        float halfHeight = camera.viewportHeight * camera.zoom / 2;
+
+        float minX = halfWidth;
+        float maxX = 50 * 32 - halfWidth;
+        float minY = halfHeight;
+        float maxY = 50 * 32 - halfHeight;
+
+        camera.position.x = Math.max(minX, Math.min(camera.position.x, maxX));
+        camera.position.y = Math.max(minY, Math.min(camera.position.y, maxY));
+    }
 }
