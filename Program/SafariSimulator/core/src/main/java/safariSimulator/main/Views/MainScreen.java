@@ -24,9 +24,9 @@ public class MainScreen implements Screen {
     private Skin skin = new Skin(Gdx.files.internal("uiskin.json"));
 
     //-------- CONTAINERS ----------
-    private MenuContainer menuContainer;
-    private LoadGameContainer loadGameContainer;
-    private NewGameConteiner newGameConteiner;
+    public MenuContainer menuContainer;
+    public LoadGameContainer loadGameContainer;
+    public NewGameConteiner newGameConteiner;
     //------------------------------
 
     public MainScreen() {
