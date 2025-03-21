@@ -57,6 +57,17 @@ public class ShopContainer extends Window {
         waterButton = new TextButton("Water", skin);
         closeButton = new TextButton("Close", skin);
 
+        Label lionPrice = new Label("100$", skin);
+        Label hyenaPrice = new Label("50$", skin);
+        Label zebraPrice = new Label("50$", skin);
+        Label elephantPrice = new Label("100$", skin);
+        Label roadPrice = new Label("80$", skin);
+        Label jeepPrice = new Label("50$", skin);
+        Label grassPrice = new Label("20$", skin);
+        Label treePrice = new Label("20$", skin);
+        Label bushPrice = new Label("30$", skin);
+        Label waterPrice = new Label("40$", skin);
+
         Table table = new Table();
         table.setFillParent(true);
 
@@ -65,48 +76,83 @@ public class ShopContainer extends Window {
         table.row();
 
         // Animal row
-        table.add(lionButton).pad(5);
-        table.add(hyenaButton).pad(5);
-        table.add(zebraButton).pad(5);
-        table.add(elephantButton).pad(5);
+        table.add(lionButton).pad(10);
+        table.add(hyenaButton).pad(10);
+        table.add(zebraButton).pad(10);
+        table.add(elephantButton).pad(10);
+        table.row();
+
+        table.add(lionPrice).padTop(0).padBottom(10).center();
+        table.add(hyenaPrice).padTop(0).padBottom(10).center();
+        table.add(zebraPrice).padTop(0).padBottom(10).center();
+        table.add(elephantPrice).padTop(0).padBottom(10).center();
         table.row();
 
         // Plant row
-        table.add(grassButton).pad(5);
-        table.add(treeButton).pad(5);
-        table.add(bushButton).pad(5);
-        table.add(); // Empty for spacing
+        table.add(grassButton).pad(10);
+        table.add(treeButton).pad(10);
+        table.add(bushButton).pad(10);
+        table.add().pad(5); // Empty for spacing
+        table.row();
+
+        table.add(grassPrice).padTop(5).padBottom(10).center();
+        table.add(treePrice).padTop(5).padBottom(10).center();
+        table.add(bushPrice).padTop(5).padBottom(10).center();
+        table.add().pad(5); // Empty for spacing
         table.row();
 
         // Vehicles and roads row
-        table.add(roadButton).pad(5);
-        table.add(jeepButton).pad(5);
-        table.add(waterButton).pad(5);
-        table.add(); // Empty for spacing
+        table.add(roadButton).pad(10);
+        table.add(jeepButton).pad(10);
+        table.add(waterButton).pad(10);
+        table.add().pad(5); // Empty for spacing
 
         table.row();
-        table.add(closeButton).pad(5);
+
+        table.add(roadPrice).padTop(5).padBottom(10).center();
+        table.add(jeepPrice).padTop(5).padBottom(10).center();
+        table.add(waterPrice).padTop(5).padBottom(10).center();
+        table.add().pad(5); // Empty for spacing
+        table.row();
+
+        // Close button row
+        table.add(closeButton).pad(10).colspan(4).center().bottom();
 
         this.addActor(table);
 
         insufficientFundsWindow = new Window("Error", skin);
         insufficientFundsWindow.setSize(300, 150);
+        insufficientFundsWindow.setMovable(false);
         insufficientFundsWindow.setPosition(
             Gdx.graphics.getWidth() / 2f - insufficientFundsWindow.getWidth() / 2,
             Gdx.graphics.getHeight() / 2f - insufficientFundsWindow.getHeight() / 2
         );
+
         TextButton okButton = new TextButton("OK", skin);
-        okButton.setSize(400, 150);
+        Label insufficientFundsLabel = new Label("Insufficient Funds", skin);
+
+        okButton.getLabel().setFontScale(1.2f);
+        okButton.setColor(0f, 0f, 1f, 1f);
         okButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 insufficientFundsWindow.remove();
             }
         });
+
         Table errorTable = new Table();
-        errorTable.add(okButton).padTop(10).fillX().height(150).width(300);
-        errorTable.center();
+        errorTable.setFillParent(true);
+
+// Add the label and button in separate rows
+        errorTable.row().pad(10).center();
+        errorTable.add(insufficientFundsLabel).colspan(1).center();
+
+        errorTable.row().pad(10).center();
+        errorTable.add(okButton).padTop(10).width(100).height(40).center();
+
+// Add the table to the insufficientFundsWindow
         insufficientFundsWindow.addActor(errorTable);
+
 
         closeButton.addListener(new ClickListener() {
             @Override
