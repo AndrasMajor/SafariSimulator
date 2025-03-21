@@ -26,6 +26,7 @@ public class Jeep extends Entity {
     public Jeep(Point pos) {
         super(pos);
         this.speed = 10;
+        this.price = 50;
     }
 
     /**

@@ -12,6 +12,7 @@ import safariSimulator.main.Models.Entity.Animal.Carnivore.Hyena;
 import safariSimulator.main.Models.Entity.Animal.Carnivore.Lion;
 import safariSimulator.main.Models.Entity.Animal.Herbivore.Elephant;
 import safariSimulator.main.Models.Entity.Animal.Herbivore.Zebra;
+import safariSimulator.main.Models.Entity.Jeep;
 import safariSimulator.main.Models.Point;
 
 public class ShopContainer extends Window {
@@ -28,6 +29,8 @@ public class ShopContainer extends Window {
     public TextButton waterButton;
     public TextButton closeButton;
     public MapScreen mapScreen;
+
+    private Window insufficientFundsWindow;
 
     public ShopContainer(Skin skin, MapScreen mapScreen) {
         super("Shop", skin);
@@ -86,6 +89,25 @@ public class ShopContainer extends Window {
 
         this.addActor(table);
 
+        insufficientFundsWindow = new Window("Error", skin);
+        insufficientFundsWindow.setSize(300, 150);
+        insufficientFundsWindow.setPosition(
+            Gdx.graphics.getWidth() / 2f - insufficientFundsWindow.getWidth() / 2,
+            Gdx.graphics.getHeight() / 2f - insufficientFundsWindow.getHeight() / 2
+        );
+        TextButton okButton = new TextButton("OK", skin);
+        okButton.setSize(400, 150);
+        okButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                insufficientFundsWindow.remove();
+            }
+        });
+        Table errorTable = new Table();
+        errorTable.add(okButton).padTop(10).fillX().height(150).width(300);
+        errorTable.center();
+        insufficientFundsWindow.addActor(errorTable);
+
         closeButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -97,61 +119,107 @@ public class ShopContainer extends Window {
         jeepButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-
+                if(ShopContainer.this.mapScreen.map.buyEntity(new Jeep(new Point())) == 1){
+                    ShopContainer.this.remove();
+                    ShopContainer.this.mapScreen.stage.addActor(ShopContainer.this.mapScreen.shopButton);
+                }else{
+                    ShopContainer.this.mapScreen.stage.addActor(insufficientFundsWindow);
+                }
             }
         });
         roadButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-
+                ShopContainer.this.remove();
+                ShopContainer.this.mapScreen.stage.addActor(ShopContainer.this.mapScreen.shopButton);
             }
         });
         waterButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-
+                if(ShopContainer.this.mapScreen.map.money > 20){
+                    ShopContainer.this.remove();
+                    ShopContainer.this.mapScreen.stage.addActor(ShopContainer.this.mapScreen.shopButton);
+                }else {
+                    ShopContainer.this.mapScreen.stage.addActor(insufficientFundsWindow);
+                }
             }
         });
         grassButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-
+                if(ShopContainer.this.mapScreen.map.money > 20){
+                    ShopContainer.this.remove();
+                    ShopContainer.this.mapScreen.stage.addActor(ShopContainer.this.mapScreen.shopButton);
+                }else {
+                    ShopContainer.this.mapScreen.stage.addActor(insufficientFundsWindow);
+                }
             }
         });
         bushButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-
+                if(ShopContainer.this.mapScreen.map.money > 30){
+                    ShopContainer.this.remove();
+                    ShopContainer.this.mapScreen.stage.addActor(ShopContainer.this.mapScreen.shopButton);
+                }else {
+                    ShopContainer.this.mapScreen.stage.addActor(insufficientFundsWindow);
+                }
             }
         });
         treeButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-
+                if(ShopContainer.this.mapScreen.map.money > 40){
+                    ShopContainer.this.remove();
+                    ShopContainer.this.mapScreen.stage.addActor(ShopContainer.this.mapScreen.shopButton);
+                }else {
+                    ShopContainer.this.mapScreen.stage.addActor(insufficientFundsWindow);
+                }
             }
         });
         elephantButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                ShopContainer.this.mapScreen.map.buyAnimal(new Elephant(new Point()));
+                if(ShopContainer.this.mapScreen.map.buyEntity(new Elephant(new Point())) == 1){
+                    ShopContainer.this.remove();
+                    ShopContainer.this.mapScreen.stage.addActor(ShopContainer.this.mapScreen.shopButton);
+                }else{
+                    ShopContainer.this.mapScreen.stage.addActor(insufficientFundsWindow);
+                }
             }
         });
         zebraButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                ShopContainer.this.mapScreen.map.buyAnimal(new Zebra(new Point()));
+                if(ShopContainer.this.mapScreen.map.buyEntity(new Zebra(new Point())) == 1){
+                    ShopContainer.this.remove();
+                    ShopContainer.this.mapScreen.stage.addActor(ShopContainer.this.mapScreen.shopButton);
+                }else{
+                    ShopContainer.this.mapScreen.stage.addActor(insufficientFundsWindow);
+                }
             }
         });
         hyenaButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                ShopContainer.this.mapScreen.map.buyAnimal(new Hyena(new Point()));
+                if(ShopContainer.this.mapScreen.map.buyEntity(new Hyena(new Point())) == 1){
+                    ShopContainer.this.remove();
+                    ShopContainer.this.mapScreen.stage.addActor(ShopContainer.this.mapScreen.shopButton);
+                }else{
+                    ShopContainer.this.mapScreen.stage.addActor(insufficientFundsWindow);
+                }
             }
         });
         lionButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                ShopContainer.this.mapScreen.map.buyAnimal(new Lion(new Point()));
+                if(ShopContainer.this.mapScreen.map.buyEntity(new Lion(new Point())) == 1){
+                    ShopContainer.this.remove();
+                    ShopContainer.this.mapScreen.stage.addActor(ShopContainer.this.mapScreen.shopButton);
+                }else{
+                    ShopContainer.this.mapScreen.stage.addActor(insufficientFundsWindow);
+                }
             }
         });
 

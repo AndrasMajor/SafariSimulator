@@ -19,5 +19,6 @@ public class Elephant extends Herbivore {
         super(pos);
         this.maxAge = 70;  // Sets the maximum age of the elephant to 70 years
         this.speed = 10;   // Sets the speed of the elephant to 10 units
+        this.price = 100;
     }
 }

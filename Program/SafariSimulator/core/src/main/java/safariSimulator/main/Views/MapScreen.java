@@ -18,6 +18,8 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import safariSimulator.main.Models.Map;
 import safariSimulator.main.Models.Tile.Tile;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class MapScreen extends InputAdapter implements Screen {
 
@@ -47,8 +49,13 @@ public class MapScreen extends InputAdapter implements Screen {
     public MapScreen() {
         map = new Map();
         map.generateMap();
+        map.generatePlants();
         shopContainer = new ShopContainer(skin, this);
     }
+
+
+
+
 
     @Override
     public void show() {

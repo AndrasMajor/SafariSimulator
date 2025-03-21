@@ -2,7 +2,10 @@ package safariSimulator.main.Models;
 
 import safariSimulator.main.Models.Entity.Animal.Animal;
 import safariSimulator.main.Models.Entity.Entity;
+import safariSimulator.main.Models.Entity.Jeep;
 import safariSimulator.main.Models.MapGeneration.MapGenerator;
+import safariSimulator.main.Models.Objects.Plant;
+import safariSimulator.main.Models.Objects.PlantType;
 import safariSimulator.main.Models.Tile.Tile;
 import safariSimulator.main.Models.Objects.Object;
 
@@ -23,7 +26,7 @@ public class Map {
         tiles = new ArrayList<Tile>();
         objects = new ArrayList<Object>();
         entities = new ArrayList<Entity>();
-        money = 1000;
+        money = 50;
         time = LocalDateTime.now();
     }
     public Map(List<Tile> tiles, List<Object> objects, List<Entity> entities, int money, LocalDateTime time) {
@@ -69,10 +72,29 @@ public class Map {
     // -------------------------------------
 
     // SHOP FUNCTIONS ----------------------
-    public int buyAnimal(Animal animal){
-        if(this.money >= animal.price){
-            entities.add(animal);
-            this.money -= animal.price;
+    public int buyEntity(Entity entity) {
+        if (this.money >= entity.price) {
+            if (entity instanceof Jeep) {
+                entity.setPos(new Point(0, 50));
+            } else {
+                List<Tile> nonWaterTiles = new ArrayList<>();
+                Random random = new Random();
+
+                for (Tile tile : tiles) {
+                    if (tile.getHealth() >= 0) {
+                       nonWaterTiles.add(tile);
+                    }
+                }
+                if (!nonWaterTiles.isEmpty()) {
+                    Random random2 = new Random();
+                    entity.setPos(nonWaterTiles.get(random2.nextInt(nonWaterTiles.size())).getPos());
+                } else {
+                    return -1;
+                }
+            }
+
+            entities.add(entity);
+            this.money -= entity.price;
             return 1;
         }
         return 0;
@@ -87,7 +109,16 @@ public class Map {
         return 0;
     }
 
-    public void sellAnimal(Animal animal){
+    public void buyWater(int x, int y) {
+        for (Tile tile : tiles) {
+            if (tile.getPos().getX() == x && tile.getPos().getY() == y) {
+                tile.setHealth(-1);
+                break;
+            }
+        }
+    }
+
+    public void sellEntity(Animal animal){
         this.entities.remove(animal);
         this.money += animal.price;
     }
@@ -95,6 +126,34 @@ public class Map {
     public void sellObject(Object object){
         this.objects.remove(object);
         this.money += object.price;
+    }
+
+    public void generatePlants() {
+        List<Tile> grassTiles = new ArrayList<>();
+        Random random = new Random();
+
+        for (Tile tile : tiles) {
+            if (tile.getHealth() > 0) {
+                grassTiles.add(tile);
+            }
+        }
+
+        int totalGrass = grassTiles.size();
+        int bushCount = (int) (totalGrass * 0.1);
+        int treeCount = (int) (totalGrass * 0.1);
+
+        for (int i = 0; i < bushCount; i++) {
+            int index = random.nextInt(grassTiles.size());
+            Tile selectedTile = grassTiles.remove(index);
+            objects.add(new Plant(selectedTile.getPos(), PlantType.Bush));
+        }
+
+        for (int i = 0; i < treeCount; i++) {
+            if (grassTiles.isEmpty()) break;
+            int index = random.nextInt(grassTiles.size());
+            Tile selectedTile = grassTiles.remove(index);
+            objects.add(new Plant(selectedTile.getPos(), PlantType.Tree));
+        }
     }
     // -------------------------------------
 

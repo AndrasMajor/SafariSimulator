@@ -19,5 +19,6 @@ public class Zebra extends Herbivore {
         super(pos);
         this.maxAge = 30;  // Sets the maximum age of the zebra to 30 years
         this.speed = 8;    // Sets the speed of the zebra to 8 units
+        this.price = 50;
     }
 }

@@ -35,8 +35,6 @@ public abstract class Animal extends Entity {
     // The leader of the animal (if part of a herd or pack)
     private Animal leader;
 
-    public  int price = 75;
-
 
     /**
      * Constructor that initializes the animal with a given position.

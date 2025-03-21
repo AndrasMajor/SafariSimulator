@@ -19,5 +19,6 @@ public class Lion extends Carnivore{
         super(pos);
         this.maxAge = 20; // Sets the maximum  age of the lion to 20 years
         this.speed = 15; // Sets the speed of the lion 15
+        this.price = 100;
     }
 }

@@ -17,6 +17,8 @@ public abstract class Entity {
     // The destination position of the entity (not yet utilized in this class)
     private Point destPos;
 
+    public int price;
+
     /**
      * Constructor that initializes the entity with a given position.
      * @param pos The initial position of the entity.
@@ -31,6 +33,10 @@ public abstract class Entity {
      */
     public Point getPos() {
         return pos;
+    }
+
+    public void setPos(Point pos) {
+        this.pos = pos;
     }
 
     /**
