@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
@@ -15,11 +16,10 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.utils.viewport.FitViewport;
-import com.badlogic.gdx.utils.viewport.Viewport;
+
 import safariSimulator.main.Models.Map;
 import safariSimulator.main.Models.Tile.Tile;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import safariSimulator.main.Models.Point;
 
 public class MapScreen extends InputAdapter implements Screen {
 
@@ -33,44 +33,39 @@ public class MapScreen extends InputAdapter implements Screen {
     private float cameraSpeed = 200;
     private float zoomSpeed = 0.02f;
 
-    private Viewport minimapViewport;
-    private OrthographicCamera minimapCamera;
-    private static final int MINIMAP_SIZE = 100;
-    private static final float MINIMAP_SCALE = 0.05f;
-
     public Stage stage;
-    //private Skin skin;
     public TextButton shopButton;
-    private boolean isShopVisible = false;
-
-    private Skin skin = new Skin(Gdx.files.internal("uiskin.json"));
+    private Skin skin;
     public ShopContainer shopContainer;
+    private Minimap minimap;
+
+    private ShaderProgram tileShader;
 
     public MapScreen() {
         map = new Map();
         map.generateMap();
         map.generatePlants();
-        shopContainer = new ShopContainer(skin, this);
+        shopContainer = new ShopContainer(new Skin(Gdx.files.internal("uiskin.json")), this);
     }
-
-
-
-
 
     @Override
     public void show() {
         batch = new SpriteBatch();
-        waterTexture = new Texture(Gdx.files.internal("water.png"));
-        sandTexture = new Texture(Gdx.files.internal("sand.png"));
-        grassTexture = new Texture(Gdx.files.internal("grass.png"));
+        waterTexture = new Texture(Gdx.files.internal("map_tile_images/water.png"));
+        sandTexture = new Texture(Gdx.files.internal("map_tile_images/sand.png"));
+        grassTexture = new Texture(Gdx.files.internal("map_tile_images/grass.png"));
+
+        ShaderProgram.pedantic = false;
+        tileShader = new ShaderProgram(
+            Gdx.files.internal("shaders/tile_blend.vert"),
+            Gdx.files.internal("shaders/tile_blend.frag")
+        );
+        if (!tileShader.isCompiled()) {
+            System.err.println("Shader compile error:\n" + tileShader.getLog());
+        }
 
         camera = new OrthographicCamera();
         camera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-
-        minimapCamera = new OrthographicCamera();
-        minimapCamera.setToOrtho(false, Gdx.graphics.getWidth() * MINIMAP_SCALE, Gdx.graphics.getHeight() * MINIMAP_SCALE);
-
-        minimapViewport = new FitViewport(MINIMAP_SIZE, MINIMAP_SIZE, minimapCamera);
 
         stage = new Stage(new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight()));
         Gdx.input.setInputProcessor(stage);
@@ -89,9 +84,13 @@ public class MapScreen extends InputAdapter implements Screen {
             }
         });
 
-
         bottomBar.add(shopButton).pad(10).width(150).height(50).left();
         stage.addActor(bottomBar);
+
+        minimap = new Minimap(camera, map);
+        minimap.setSize(Minimap.SIZE, Minimap.SIZE);
+        minimap.setPosition(Gdx.graphics.getWidth() - Minimap.SIZE - 10, Gdx.graphics.getHeight() - Minimap.SIZE - 10);
+        stage.addActor(minimap);
     }
 
     @Override
@@ -105,19 +104,60 @@ public class MapScreen extends InputAdapter implements Screen {
         Gdx.gl.glClearColor(1, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
+        batch.setShader(tileShader);
         batch.begin();
-        Texture tileTexture;
-        for (Tile tile : map.getTiles()) {
-            if (tile.health == -1) tileTexture = waterTexture;
-            else if (tile.health == 0) tileTexture = sandTexture;
-            else tileTexture = grassTexture;
 
-            batch.draw(tileTexture, tile.pos.getX() * 32, tile.pos.getY() * 32, 32, 32);
+        for (Tile tile : map.getTiles()) {
+            Texture tileTexture;
+            int tileType;
+
+            if (tile.health == -1) {
+                tileTexture = waterTexture;
+                tileType = 0;
+            } else if (tile.health == 0) {
+                tileTexture = sandTexture;
+                tileType = 1;
+            } else {
+                tileTexture = grassTexture;
+                tileType = 2;
+            }
+            int[] neighbors = getNeighborTypes(tile.getPos());
+
+            tileShader.setUniformi("u_tileType", tileType);
+            tileShader.setUniformi("u_neighborTop", neighbors[0]);
+            tileShader.setUniformi("u_neighborRight", neighbors[1]);
+            tileShader.setUniformi("u_neighborBottom", neighbors[2]);
+            tileShader.setUniformi("u_neighborLeft", neighbors[3]);
+
+
+            batch.draw(tileTexture, tile.getPos().getX() * 32, tile.getPos().getY() * 32, 32, 32);
         }
+
         batch.end();
+        batch.setShader(null); // 🔥 reset shader so minimap & UI render normally
 
         stage.act(delta);
         stage.draw();
+    }
+
+    private int[] getNeighborTypes(Point p) {
+        int[] types = new int[4];
+        types[0] = getTileType(p.getX(), p.getY() + 1); // top
+        types[1] = getTileType(p.getX() + 1, p.getY()); // right
+        types[2] = getTileType(p.getX(), p.getY() - 1); // bottom
+        types[3] = getTileType(p.getX() - 1, p.getY()); // left
+        return types;
+    }
+
+    private int getTileType(int x, int y) {
+        for (Tile tile : map.getTiles()) {
+            if (tile.getPos().getX() == x && tile.getPos().getY() == y) {
+                if (tile.getHealth() == -1) return 0; // water
+                if (tile.getHealth() == 0) return 1;  // sand
+                return 2;                             // grass
+            }
+        }
+        return -1; // invalid or out of bounds
     }
 
     @Override
@@ -126,48 +166,29 @@ public class MapScreen extends InputAdapter implements Screen {
         stage.getViewport().update(width, height, true);
     }
 
-    @Override
-    public void pause() {}
-
-    @Override
-    public void resume() {}
-
-    @Override
-    public void hide() {}
-
-    @Override
-    public void dispose() {
+    @Override public void pause() {}
+    @Override public void resume() {}
+    @Override public void hide() {}
+    @Override public void dispose() {
         batch.dispose();
         waterTexture.dispose();
         sandTexture.dispose();
         grassTexture.dispose();
         stage.dispose();
         skin.dispose();
+        minimap.dispose();
+        tileShader.dispose();
     }
 
     private void handleInput(float delta) {
-        if (Gdx.input.isKeyPressed(Input.Keys.W)) {
-            camera.position.y += cameraSpeed * delta;
-        }
-        if (Gdx.input.isKeyPressed(Input.Keys.S)) {
-            camera.position.y -= cameraSpeed * delta;
-        }
-        if (Gdx.input.isKeyPressed(Input.Keys.A)) {
-            camera.position.x -= cameraSpeed * delta;
-        }
-        if (Gdx.input.isKeyPressed(Input.Keys.D)) {
-            camera.position.x += cameraSpeed * delta;
-        }
+        if (Gdx.input.isKeyPressed(Input.Keys.W)) camera.position.y += cameraSpeed * delta;
+        if (Gdx.input.isKeyPressed(Input.Keys.S)) camera.position.y -= cameraSpeed * delta;
+        if (Gdx.input.isKeyPressed(Input.Keys.A)) camera.position.x -= cameraSpeed * delta;
+        if (Gdx.input.isKeyPressed(Input.Keys.D)) camera.position.x += cameraSpeed * delta;
 
         float targetZoom = camera.zoom;
-
-        if (Gdx.input.isKeyPressed(Input.Keys.Q)) {
-            targetZoom = Math.min(1f, targetZoom + zoomSpeed);
-        }
-        if (Gdx.input.isKeyPressed(Input.Keys.E)) {
-            targetZoom = Math.max(0.5f, targetZoom - zoomSpeed);
-        }
-
+        if (Gdx.input.isKeyPressed(Input.Keys.Q)) targetZoom = Math.min(1f, targetZoom + zoomSpeed);
+        if (Gdx.input.isKeyPressed(Input.Keys.E)) targetZoom = Math.max(0.5f, targetZoom - zoomSpeed);
         camera.zoom += (targetZoom - camera.zoom) * 0.4f;
     }
 
