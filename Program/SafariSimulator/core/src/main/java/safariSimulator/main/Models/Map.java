@@ -155,6 +155,14 @@ public class Map {
             objects.add(new Plant(selectedTile.getPos(), PlantType.Tree));
         }
     }
+
+    public int getWidth() {
+        return (int) Math.sqrt(tiles.size());
+    }
+
+    public int getHeight() {
+        return (int) Math.sqrt(tiles.size());
+    }
     // -------------------------------------
 
 
