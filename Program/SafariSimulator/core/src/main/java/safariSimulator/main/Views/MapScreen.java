@@ -1,14 +1,12 @@
 package safariSimulator.main.Views;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
-import com.badlogic.gdx.InputAdapter;
-import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
@@ -17,16 +15,38 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 
+import safariSimulator.main.Models.Entity.Animal.Carnivore.Hyena;
+import safariSimulator.main.Models.Entity.Animal.Carnivore.Lion;
+import safariSimulator.main.Models.Entity.Animal.Herbivore.Elephant;
+import safariSimulator.main.Models.Entity.Animal.Herbivore.Zebra;
+import safariSimulator.main.Models.Entity.Entity;
+import safariSimulator.main.Models.Entity.Jeep;
 import safariSimulator.main.Models.Map;
+import safariSimulator.main.Models.Objects.Plant;
+import safariSimulator.main.Models.Objects.PlantType;
+import safariSimulator.main.Models.Objects.Road;
 import safariSimulator.main.Models.Tile.Tile;
 import safariSimulator.main.Models.Point;
+import safariSimulator.main.Models.Objects.Object;
 
 public class MapScreen extends InputAdapter implements Screen {
+
+    public PlantType selectedPlantType = null;
+
 
     private Texture waterTexture;
     private Texture sandTexture;
     private Texture grassTexture;
     private SpriteBatch batch;
+    private Texture lionTexture;
+    private Texture zebraTexture;
+    private Texture hyenaTexture;
+    private Texture elephantTexture;
+    private Texture jeepTexture;
+    private Texture treeTexture;
+    private Texture bushTexture;
+    private Texture roadTexture;
+
     public Map map;
 
     private OrthographicCamera camera;
@@ -55,6 +75,17 @@ public class MapScreen extends InputAdapter implements Screen {
         sandTexture = new Texture(Gdx.files.internal("map_tile_images/sand.png"));
         grassTexture = new Texture(Gdx.files.internal("map_tile_images/grass.png"));
 
+        lionTexture = new Texture(Gdx.files.internal("entities/lion.png"));
+        hyenaTexture = new Texture(Gdx.files.internal("entities/hyena.png"));
+        elephantTexture = new Texture(Gdx.files.internal("entities/elephant.png"));
+        zebraTexture = new Texture(Gdx.files.internal("entities/zebra.png"));
+
+        jeepTexture = new Texture(Gdx.files.internal("entities/jeep.png"));
+
+        treeTexture = new Texture(Gdx.files.internal("objects/tree.png"));
+        bushTexture = new Texture(Gdx.files.internal("objects/bush.png"));
+        roadTexture = new Texture(Gdx.files.internal("objects/road.png"));
+
         ShaderProgram.pedantic = false;
         tileShader = new ShaderProgram(
             Gdx.files.internal("shaders/tile_blend.vert"),
@@ -68,7 +99,9 @@ public class MapScreen extends InputAdapter implements Screen {
         camera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
         stage = new Stage(new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight()));
-        Gdx.input.setInputProcessor(stage);
+        //Gdx.input.setInputProcessor(stage);
+        Gdx.input.setInputProcessor(new InputMultiplexer(stage, this));
+
         skin = new Skin(Gdx.files.internal("uiskin.json"));
 
         Table bottomBar = new Table();
@@ -79,7 +112,6 @@ public class MapScreen extends InputAdapter implements Screen {
         shopButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                stage.clear();
                 stage.addActor(shopContainer);
             }
         });
@@ -133,6 +165,45 @@ public class MapScreen extends InputAdapter implements Screen {
             batch.draw(tileTexture, tile.getPos().getX() * 32, tile.getPos().getY() * 32, 32, 32);
         }
 
+        for (Entity entity : map.getEntities()) {
+            Texture entityTexture = null;
+
+            if (entity instanceof Lion) {
+                entityTexture = lionTexture;
+            } else if (entity instanceof Zebra) {
+                entityTexture = zebraTexture;
+            } else if (entity instanceof Elephant) {
+                entityTexture = elephantTexture;
+            } else if (entity instanceof Hyena) {
+                entityTexture = hyenaTexture;
+            } else if( entity instanceof Jeep){
+                entityTexture = jeepTexture;
+            }
+
+            if (entityTexture != null) {
+                Point pos = entity.getPos();
+                batch.draw(entityTexture, pos.getX() * 32, pos.getY() * 32, 32, 32);
+            }
+        }
+
+        for(Object object : map.getObjects()){
+            Texture objectTexture = null;
+            if (object instanceof Plant) {
+                if (((Plant) object).type == PlantType.Tree){
+                    objectTexture = treeTexture;
+                }else{
+                    objectTexture = bushTexture;
+                }
+            }else if(object instanceof Road){
+                objectTexture = roadTexture;
+            }
+
+            if (objectTexture != null) {
+                Point pos = object.getPos();
+                batch.draw(objectTexture, pos.getX() * 32, pos.getY() * 32, 32, 32);
+            }
+        }
+
         batch.end();
         batch.setShader(null); // 🔥 reset shader so minimap & UI render normally
 
@@ -165,6 +236,23 @@ public class MapScreen extends InputAdapter implements Screen {
         camera.setToOrtho(false, width, height);
         stage.getViewport().update(width, height, true);
     }
+
+    @Override
+    public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+        if (selectedPlantType != null) {
+            Vector3 worldCoordinates = camera.unproject(new Vector3(screenX, screenY, 0));
+            int tileX = (int) (worldCoordinates.x / 32);
+            int tileY = (int) (worldCoordinates.y / 32);
+
+            Tile clickedTile = map.getTileAt(tileX, tileY);
+            if (clickedTile != null && clickedTile.getHealth() > 0) {
+                map.buyObject(new Plant(new Point(tileX, tileY), selectedPlantType));
+                selectedPlantType = null;
+            }
+        }
+        return super.touchDown(screenX, screenY, pointer, button);
+    }
+
 
     @Override public void pause() {}
     @Override public void resume() {}

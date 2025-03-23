@@ -26,7 +26,7 @@ public class Map {
         tiles = new ArrayList<Tile>();
         objects = new ArrayList<Object>();
         entities = new ArrayList<Entity>();
-        money = 50;
+        money = 1000;
         time = LocalDateTime.now();
     }
     public Map(List<Tile> tiles, List<Object> objects, List<Entity> entities, int money, LocalDateTime time) {
@@ -69,13 +69,24 @@ public class Map {
     public List<Entity> getEntities() {
         return new ArrayList<>(entities);
     }
+
+    public Tile getTileAt(int x, int y) {
+        for (Tile tile : tiles) {
+            if (tile.getPos().getX() == x && tile.getPos().getY() == y) {
+                return tile;
+            }
+        }
+        return null;
+    }
+
+
     // -------------------------------------
 
     // SHOP FUNCTIONS ----------------------
     public int buyEntity(Entity entity) {
         if (this.money >= entity.price) {
             if (entity instanceof Jeep) {
-                entity.setPos(new Point(0, 50));
+                entity.setPos(new Point(0, 0));
             } else {
                 List<Tile> nonWaterTiles = new ArrayList<>();
                 Random random = new Random();
@@ -113,6 +124,15 @@ public class Map {
         for (Tile tile : tiles) {
             if (tile.getPos().getX() == x && tile.getPos().getY() == y) {
                 tile.setHealth(-1);
+                break;
+            }
+        }
+    }
+
+    public void buyGrass(int x, int y) {
+        for (Tile tile : tiles) {
+            if (tile.getPos().getX() == x && tile.getPos().getY() == y) {
+                tile.setHealth(100);
                 break;
             }
         }

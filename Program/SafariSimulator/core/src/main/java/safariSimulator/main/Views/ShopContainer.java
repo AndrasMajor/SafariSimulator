@@ -13,6 +13,8 @@ import safariSimulator.main.Models.Entity.Animal.Carnivore.Lion;
 import safariSimulator.main.Models.Entity.Animal.Herbivore.Elephant;
 import safariSimulator.main.Models.Entity.Animal.Herbivore.Zebra;
 import safariSimulator.main.Models.Entity.Jeep;
+import safariSimulator.main.Models.Objects.Plant;
+import safariSimulator.main.Models.Objects.PlantType;
 import safariSimulator.main.Models.Point;
 
 public class ShopContainer extends Window {
@@ -205,10 +207,11 @@ public class ShopContainer extends Window {
         bushButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                if(ShopContainer.this.mapScreen.map.money > 30){
+
+                if (ShopContainer.this.mapScreen.map.money > 30) {
+                    mapScreen.selectedPlantType = PlantType.Bush;
                     ShopContainer.this.remove();
-                    ShopContainer.this.mapScreen.stage.addActor(ShopContainer.this.mapScreen.shopButton);
-                }else {
+                }else{
                     ShopContainer.this.mapScreen.stage.addActor(insufficientFundsWindow);
                 }
             }
@@ -216,10 +219,11 @@ public class ShopContainer extends Window {
         treeButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                if(ShopContainer.this.mapScreen.map.money > 40){
+
+                if (ShopContainer.this.mapScreen.map.money > 40) {
+                    mapScreen.selectedPlantType = PlantType.Tree;
                     ShopContainer.this.remove();
-                    ShopContainer.this.mapScreen.stage.addActor(ShopContainer.this.mapScreen.shopButton);
-                }else {
+                }else{
                     ShopContainer.this.mapScreen.stage.addActor(insufficientFundsWindow);
                 }
             }

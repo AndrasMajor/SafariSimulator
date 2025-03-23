@@ -10,7 +10,7 @@ public abstract class Object {
         this.position = point;
     }
 
-    public Point getPosition() {
+    public Point getPos() {
         Point out = new Point(this.position.getX(), this.position.getY());
         return out;
     }
