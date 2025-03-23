@@ -4,6 +4,7 @@ import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.Vector3;
@@ -33,6 +34,7 @@ public class MapScreen extends InputAdapter implements Screen {
 
     public PlantType selectedPlantType = null;
 
+    private BitmapFont font;
 
     private Texture waterTexture;
     private Texture sandTexture;
@@ -71,6 +73,7 @@ public class MapScreen extends InputAdapter implements Screen {
     @Override
     public void show() {
         batch = new SpriteBatch();
+        font = new BitmapFont();
         waterTexture = new Texture(Gdx.files.internal("map_tile_images/water.png"));
         sandTexture = new Texture(Gdx.files.internal("map_tile_images/sand.png"));
         grassTexture = new Texture(Gdx.files.internal("map_tile_images/grass.png"));
@@ -138,6 +141,9 @@ public class MapScreen extends InputAdapter implements Screen {
 
         batch.setShader(tileShader);
         batch.begin();
+
+        String moneyText = "Money : " + this.map.money + "$";
+        font.draw(batch, moneyText, Gdx.graphics.getWidth() - 200, 50);
 
         for (Tile tile : map.getTiles()) {
             Texture tileTexture;
@@ -259,6 +265,15 @@ public class MapScreen extends InputAdapter implements Screen {
     @Override public void hide() {}
     @Override public void dispose() {
         batch.dispose();
+        font.dispose();
+        lionTexture.dispose();
+        zebraTexture.dispose();
+        elephantTexture.dispose();
+        hyenaTexture.dispose();
+        roadTexture.dispose();
+        jeepTexture.dispose();
+        treeTexture.dispose();
+        bushTexture.dispose();
         waterTexture.dispose();
         sandTexture.dispose();
         grassTexture.dispose();

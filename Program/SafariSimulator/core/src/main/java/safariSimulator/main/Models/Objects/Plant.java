@@ -9,7 +9,7 @@ public class Plant extends Object {
     public Plant(Point point, PlantType type) {
         super(point);
         this.type = type;
-        if(this.type == PlantType.Tree) this.price = 100;
-        else this.price = 50;
+        if(this.type == PlantType.Tree) this.price = 40;
+        else this.price = 30;
     }
 }
