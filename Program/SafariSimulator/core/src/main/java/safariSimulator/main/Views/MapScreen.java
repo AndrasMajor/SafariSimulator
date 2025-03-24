@@ -143,7 +143,7 @@ public class MapScreen extends InputAdapter implements Screen {
         batch.begin();
 
         String moneyText = "Money : " + this.map.money + "$";
-        font.draw(batch, moneyText, Gdx.graphics.getWidth() - 200, 50);
+        font.draw(batch, moneyText, Gdx.graphics.getWidth() - 100, 50);
 
         for (Tile tile : map.getTiles()) {
             Texture tileTexture;

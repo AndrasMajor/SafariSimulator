@@ -32,6 +32,9 @@ public class ShopContainer extends Window {
     public TextButton closeButton;
     public MapScreen mapScreen;
 
+    public final int treePrice = 40;
+    public final int bushPrice = 30;
+
     private Window insufficientFundsWindow;
 
     public ShopContainer(Skin skin, MapScreen mapScreen) {
@@ -208,7 +211,7 @@ public class ShopContainer extends Window {
             @Override
             public void clicked(InputEvent event, float x, float y) {
 
-                if (ShopContainer.this.mapScreen.map.money > 30) {
+                if (ShopContainer.this.mapScreen.map.money > ShopContainer.this.bushPrice) {
                     mapScreen.selectedPlantType = PlantType.Bush;
                     ShopContainer.this.remove();
                 }else{
@@ -220,7 +223,7 @@ public class ShopContainer extends Window {
             @Override
             public void clicked(InputEvent event, float x, float y) {
 
-                if (ShopContainer.this.mapScreen.map.money > 40) {
+                if (ShopContainer.this.mapScreen.map.money > ShopContainer.this.treePrice) {
                     mapScreen.selectedPlantType = PlantType.Tree;
                     ShopContainer.this.remove();
                 }else{
