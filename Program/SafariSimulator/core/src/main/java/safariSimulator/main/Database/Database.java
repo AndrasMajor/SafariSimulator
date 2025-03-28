@@ -10,7 +10,7 @@ public class Database {
     public static int saveGame(Map map) {
         Json json = new Json();
         FileHandle file;
-        System.out.println("here");
+        MapState mapState = new MapState(map);
 
         if (map.savingFileName != null) {
             file = Gdx.files.local(map.savingFileName);
@@ -28,7 +28,7 @@ public class Database {
                 return 0;
             }
         }
-        file.writeString(json.prettyPrint(map), false);
+        file.writeString(json.prettyPrint(mapState), false);
         System.out.println("Save file created at: " + file.file().getAbsolutePath());
         return 1;
     }
@@ -38,8 +38,15 @@ public class Database {
         FileHandle file = Gdx.files.local(fileName);
 
         if (file.exists()) {
-            return json.fromJson(Map.class, file.readString());
+            MapState mapState = json.fromJson(MapState.class, file.readString());
+            return new Map(mapState);
         }
         return new Map();
+    }
+
+    public static boolean isExistsSave(String fileName) {
+        Json json = new Json();
+        FileHandle file = Gdx.files.local(fileName);
+        return file.exists();
     }
 }

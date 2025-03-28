@@ -65,10 +65,16 @@ public class MapScreen extends InputAdapter implements Screen {
 
     private ShaderProgram tileShader;
 
-    public MapScreen() {
-        map = new Map();
+    public MapScreen(String level) {
+        map = new Map(level);
         map.generateMap();
         map.generatePlants();
+        shopContainer = new ShopContainer(new Skin(Gdx.files.internal("uiskin.json")), this);
+        saveContainer = new SaveContainer(new Skin(Gdx.files.internal("uiskin.json")), this);
+    }
+
+    public MapScreen(Map loadedMap) {
+        map = loadedMap;
         shopContainer = new ShopContainer(new Skin(Gdx.files.internal("uiskin.json")), this);
         saveContainer = new SaveContainer(new Skin(Gdx.files.internal("uiskin.json")), this);
     }

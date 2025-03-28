@@ -1,5 +1,6 @@
 package safariSimulator.main.Models;
 
+import safariSimulator.main.Database.MapState;
 import safariSimulator.main.Models.Entity.Animal.Animal;
 import safariSimulator.main.Models.Entity.Entity;
 import safariSimulator.main.Models.Entity.Jeep;
@@ -21,22 +22,26 @@ public class Map {
     public int money;
     public LocalDateTime time;
     public String savingFileName;
+    public String level;
 
     // CONSTRUCTURES -----------------------
-    public Map() {
+    public Map() {}
+    public Map(String level) {
         tiles = new ArrayList<Tile>();
         objects = new ArrayList<Object>();
         entities = new ArrayList<Entity>();
         money = 1000;
         time = LocalDateTime.now();
+        this.level = level;
     }
-    public Map(List<Tile> tiles, List<Object> objects, List<Entity> entities, int money, LocalDateTime time, String savingFileName) {
-        this.tiles = tiles;
-        this.objects = objects;
-        this.entities = entities;
-        this.money = money;
-        this.time = time;
-        this.savingFileName = savingFileName;
+    public Map(MapState mapState) {
+        tiles = mapState.tiles;
+        objects = mapState.objects;
+        entities = mapState.entities;
+        money = mapState.money;
+        time = LocalDateTime.parse(mapState.timeString);
+        savingFileName = mapState.savingFileName;
+        level = mapState.level;
     }
     // -------------------------------------
 
