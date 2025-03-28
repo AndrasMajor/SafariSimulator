@@ -20,6 +20,7 @@ public class Map {
     private List<Entity> entities;
     public int money;
     public LocalDateTime time;
+    public String savingFileName;
 
     // CONSTRUCTURES -----------------------
     public Map() {
@@ -29,12 +30,13 @@ public class Map {
         money = 1000;
         time = LocalDateTime.now();
     }
-    public Map(List<Tile> tiles, List<Object> objects, List<Entity> entities, int money, LocalDateTime time) {
+    public Map(List<Tile> tiles, List<Object> objects, List<Entity> entities, int money, LocalDateTime time, String savingFileName) {
         this.tiles = tiles;
         this.objects = objects;
         this.entities = entities;
         this.money = money;
         this.time = time;
+        this.savingFileName = savingFileName;
     }
     // -------------------------------------
 
@@ -78,9 +80,14 @@ public class Map {
         }
         return null;
     }
-
-
     // -------------------------------------
+
+    // SETTERS -----------------------------
+    public void setTiles(List<Tile> tiles) { this.tiles = tiles; }
+    public void setObjects(List<Object> objects) { this.objects = objects; }
+    public void setEntities(List<Entity> entities) { this.entities = entities; }
+
+    //--------------------------------------
 
     // SHOP FUNCTIONS ----------------------
     public int buyEntity(Entity entity) {

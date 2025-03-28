@@ -9,13 +9,13 @@ import safariSimulator.main.Models.Point;
 public abstract class Entity {
 
     // The current position of the entity
-    private Point pos;
+    public Point pos;
 
     // The speed of the entity
-    protected int speed;
+    public int speed;
 
     // The destination position of the entity (not yet utilized in this class)
-    private Point destPos;
+    public Point destPos;
 
     public int price;
 
@@ -26,6 +26,7 @@ public abstract class Entity {
     public Entity(Point pos) {
         this.pos = pos;
     }
+    public Entity() {}
 
     /**
      * Gets the current position of the entity.

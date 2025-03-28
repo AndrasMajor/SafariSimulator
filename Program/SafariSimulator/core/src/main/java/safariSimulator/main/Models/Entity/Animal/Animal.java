@@ -50,6 +50,7 @@ public abstract class Animal extends Entity {
         this.waterLevel = 100;  // Default full water level
         this.leader = null;
     }
+    public Animal() {}
 
     /**
      * Gets the age of the animal.

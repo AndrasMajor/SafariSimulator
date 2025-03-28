@@ -21,4 +21,5 @@ public class Zebra extends Herbivore {
         this.speed = 8;    // Sets the speed of the zebra to 8 units
         this.price = 50;
     }
+    public Zebra() {}
 }

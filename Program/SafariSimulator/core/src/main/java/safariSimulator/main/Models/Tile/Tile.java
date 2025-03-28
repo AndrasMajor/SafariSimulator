@@ -10,6 +10,7 @@ public class Tile {
         this.pos = pos;
         this.health = health;
     }
+    public Tile() {}
 
     public int getHealth() {
         return health;

@@ -21,4 +21,5 @@ public class Lion extends Carnivore{
         this.speed = 15; // Sets the speed of the lion 15
         this.price = 100;
     }
+    public Lion() {}
 }

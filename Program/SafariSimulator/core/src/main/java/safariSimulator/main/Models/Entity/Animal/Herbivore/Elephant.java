@@ -21,4 +21,5 @@ public class Elephant extends Herbivore {
         this.speed = 10;   // Sets the speed of the elephant to 10 units
         this.price = 100;
     }
+    public Elephant() {}
 }

@@ -10,4 +10,5 @@ public class Road extends Object {
         direction = new RoadDirection[]{from, to};
         this.price = 80;
     }
+    public Road() {}
 }
