@@ -19,6 +19,7 @@ public abstract class Herbivore extends Animal {
     public Herbivore(Point pos) {
         super(pos);
     }
+    public Herbivore() {}
 
     public void graze() {
         this.foodLevel = Math.min(this.foodLevel + 10, 100);

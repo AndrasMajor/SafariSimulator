@@ -57,17 +57,26 @@ public class MapScreen extends InputAdapter implements Screen {
 
     public Stage stage;
     public TextButton shopButton;
+    public TextButton exitButton;
     private Skin skin;
     public ShopContainer shopContainer;
+    public SaveContainer saveContainer;
     private Minimap minimap;
 
     private ShaderProgram tileShader;
 
-    public MapScreen() {
-        map = new Map();
+    public MapScreen(String level) {
+        map = new Map(level);
         map.generateMap();
         map.generatePlants();
         shopContainer = new ShopContainer(new Skin(Gdx.files.internal("uiskin.json")), this);
+        saveContainer = new SaveContainer(new Skin(Gdx.files.internal("uiskin.json")), this);
+    }
+
+    public MapScreen(Map loadedMap) {
+        map = loadedMap;
+        shopContainer = new ShopContainer(new Skin(Gdx.files.internal("uiskin.json")), this);
+        saveContainer = new SaveContainer(new Skin(Gdx.files.internal("uiskin.json")), this);
     }
 
     @Override
@@ -118,8 +127,17 @@ public class MapScreen extends InputAdapter implements Screen {
                 stage.addActor(shopContainer);
             }
         });
+        exitButton = new TextButton("Save", skin);
+        exitButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                System.out.println("save");
+                stage.addActor(saveContainer);
+            }
+        });
 
         bottomBar.add(shopButton).pad(10).width(150).height(50).left();
+        bottomBar.add(exitButton).pad(10).width(150).height(50).left();
         stage.addActor(bottomBar);
 
         minimap = new Minimap(camera, map);

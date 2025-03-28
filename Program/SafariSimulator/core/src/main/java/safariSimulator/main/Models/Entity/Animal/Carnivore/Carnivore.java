@@ -1,6 +1,7 @@
 package safariSimulator.main.Models.Entity.Animal.Carnivore;
 
 import safariSimulator.main.Models.Entity.Animal.Animal;
+import safariSimulator.main.Models.Objects.RoadDirection;
 import safariSimulator.main.Models.Point;
 
 /**
@@ -19,6 +20,7 @@ public abstract class Carnivore extends Animal {
     public Carnivore(Point pos) {
         super(pos);
     }
+    public Carnivore() {}
 
 
     public void hunt(){

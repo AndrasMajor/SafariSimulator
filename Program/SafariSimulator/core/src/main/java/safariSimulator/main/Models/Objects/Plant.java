@@ -12,4 +12,5 @@ public class Plant extends Object {
         if(this.type == PlantType.Tree) this.price = 40;
         else this.price = 30;
     }
+    public Plant() {}
 }

@@ -1,5 +1,6 @@
 package safariSimulator.main.Models;
 
+import safariSimulator.main.Database.MapState;
 import safariSimulator.main.Models.Entity.Animal.Animal;
 import safariSimulator.main.Models.Entity.Entity;
 import safariSimulator.main.Models.Entity.Jeep;
@@ -20,21 +21,27 @@ public class Map {
     private List<Entity> entities;
     public int money;
     public LocalDateTime time;
+    public String savingFileName;
+    public String level;
 
     // CONSTRUCTURES -----------------------
-    public Map() {
+    public Map() {}
+    public Map(String level) {
         tiles = new ArrayList<Tile>();
         objects = new ArrayList<Object>();
         entities = new ArrayList<Entity>();
         money = 1000;
         time = LocalDateTime.now();
+        this.level = level;
     }
-    public Map(List<Tile> tiles, List<Object> objects, List<Entity> entities, int money, LocalDateTime time) {
-        this.tiles = tiles;
-        this.objects = objects;
-        this.entities = entities;
-        this.money = money;
-        this.time = time;
+    public Map(MapState mapState) {
+        tiles = mapState.tiles;
+        objects = mapState.objects;
+        entities = mapState.entities;
+        money = mapState.money;
+        time = LocalDateTime.parse(mapState.timeString);
+        savingFileName = mapState.savingFileName;
+        level = mapState.level;
     }
     // -------------------------------------
 
@@ -78,9 +85,14 @@ public class Map {
         }
         return null;
     }
-
-
     // -------------------------------------
+
+    // SETTERS -----------------------------
+    public void setTiles(List<Tile> tiles) { this.tiles = tiles; }
+    public void setObjects(List<Object> objects) { this.objects = objects; }
+    public void setEntities(List<Entity> entities) { this.entities = entities; }
+
+    //--------------------------------------
 
     // SHOP FUNCTIONS ----------------------
     public int buyEntity(Entity entity) {
