@@ -1,5 +1,6 @@
 package safariSimulator.main.Models.Entity.Animal;
 
+import safariSimulator.main.Models.Map;
 import safariSimulator.main.Models.Tile.Tile;
 import safariSimulator.main.Models.Entity.Entity;
 import safariSimulator.main.Models.Point;
@@ -182,11 +183,130 @@ public abstract class Animal extends Entity {
         return this.leader;
     }
 
+    public abstract boolean isHerbivore();
 
-    @Override
-    public void move() {
-        // TODO: Implement movement logic for animals
+
+    public void move(Map map) {
+        List<Tile> tiles = map.getTiles();
+        List<Entity> entities = map.getEntities();
+        Point currentPos = this.getPos();
+        List<Tile> nearbyTiles = getNearbyTiles(currentPos, tiles);
+
+        Tile targetTile = null;
+        Entity targetEntity = null;
+
+        if (waterLevel < 50) {
+            // Search for water-adjacent land tile
+            for (Tile tile : nearbyTiles) {
+                if (tile.getHealth() != -1 && isNextToWater(tile, tiles)) {
+                    targetTile = tile;
+                    break;
+                }
+            }
+        } else if (foodLevel < 50 && isHerbivore()) {
+            // Search for grass
+            for (Tile tile : nearbyTiles) {
+                if (tile.getHealth() > 0) {
+                    targetTile = tile;
+                    break;
+                }
+            }
+        } else if (foodLevel < 50 && !isHerbivore()) {
+            // Predator searches for prey
+            for (Entity entity : entities) {
+                if (entity instanceof Animal && ((Animal) entity).isHerbivore()
+                    && isInRange(currentPos, entity.getPos())) {
+                    targetEntity = entity;
+                    break;
+                }
+            }
+        }
+
+        if (targetTile != null) {
+            moveStepTowards(targetTile.getPos(), tiles);
+        } else if (targetEntity != null) {
+            moveStepTowards(targetEntity.getPos(), tiles);
+        } else {
+            moveRandomly(tiles);
+        }
     }
+
+    private void moveStepTowards(Point target, List<Tile> tiles) {
+        Point current = this.getPos();
+        int dx = Integer.compare(target.getX(), current.getX());
+        int dy = Integer.compare(target.getY(), current.getY());
+
+        Point newPos = new Point(current.getX() + dx, current.getY() + dy);
+
+        if (isValidMove(newPos, tiles)) {
+            this.setPos(newPos);
+        }
+    }
+
+    private boolean isValidMove(Point pos, List<Tile> tiles) {
+        for (Tile tile : tiles) {
+            if (tile.getPos().equals(pos)) {
+                return tile.getHealth() != -1; // Cannot move onto water
+            }
+        }
+        return false;
+    }
+
+    private boolean isNextToWater(Tile tile, List<Tile> tiles) {
+        int x = tile.getPos().getX();
+        int y = tile.getPos().getY();
+
+        for (Tile t : tiles) {
+            if (t.getHealth() == -1) {
+                int tx = t.getPos().getX();
+                int ty = t.getPos().getY();
+                if (Math.abs(tx - x) <= 1 && Math.abs(ty - y) <= 1) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private List<Tile> getNearbyTiles(Point pos, List<Tile> tiles) {
+        List<Tile> nearby = new ArrayList<>();
+        for (Tile tile : tiles) {
+            if (Math.abs(tile.getPos().getX() - pos.getX()) <= 1 &&
+                Math.abs(tile.getPos().getY() - pos.getY()) <= 1) {
+                nearby.add(tile);
+            }
+        }
+        return nearby;
+    }
+
+    private boolean isInRange(Point p1, Point p2) {
+        return Math.abs(p1.getX() - p2.getX()) <= 2 && Math.abs(p1.getY() - p2.getY()) <= 2;
+    }
+
+    private void moveTo(Point target) {
+        this.setPos(target);
+    }
+
+    private void moveRandomly(List<Tile> tiles) {
+        Random rand = new Random();
+        Point newPos;
+        do {
+            int dx = rand.nextInt(3) - 1;
+            int dy = rand.nextInt(3) - 1;
+            newPos = new Point(this.getPos().getX() + dx, this.getPos().getY() + dy);
+        } while (isWaterTile(newPos, tiles) && !isValidMove(newPos, tiles));
+        this.setPos(newPos);
+    }
+
+    private boolean isWaterTile(Point pos, List<Tile> tiles) {
+        for (Tile tile : tiles) {
+            if (tile.getPos().equals(pos) && tile.getHealth() == -1) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 
     /**
      * Checks if the animal is alive.

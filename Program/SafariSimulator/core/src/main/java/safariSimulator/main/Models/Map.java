@@ -14,6 +14,10 @@ import java.time.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 public class Map {
 
     private List<Tile> tiles;
@@ -23,9 +27,10 @@ public class Map {
     public LocalDateTime time;
     public String savingFileName;
     public String level;
+    private ScheduledExecutorService scheduler;
 
     // CONSTRUCTURES -----------------------
-    public Map() {}
+    public Map() {initScheduler();}
     public Map(String level) {
         tiles = new ArrayList<Tile>();
         objects = new ArrayList<Object>();
@@ -33,6 +38,7 @@ public class Map {
         money = 1000;
         time = LocalDateTime.now();
         this.level = level;
+        initScheduler();
     }
     public Map(MapState mapState) {
         tiles = mapState.tiles;
@@ -42,6 +48,7 @@ public class Map {
         time = LocalDateTime.parse(mapState.timeString);
         savingFileName = mapState.savingFileName;
         level = mapState.level;
+        initScheduler();
     }
     // -------------------------------------
 
@@ -197,6 +204,24 @@ public class Map {
     }
     // -------------------------------------
 
+    private void initScheduler() {
+        scheduler = Executors.newScheduledThreadPool(1);
+        scheduler.scheduleAtFixedRate(this::moveAnimals, 0, 500, TimeUnit.MILLISECONDS);
+    }
+
+    private void moveAnimals() {
+        for (Entity entity : entities) {
+            if (entity instanceof Animal) {
+                ((Animal) entity).move(this);
+            }
+        }
+    }
+
+    public void stopScheduler() {
+        if (scheduler != null) {
+            scheduler.shutdown();
+        }
+    }
 
 
 
