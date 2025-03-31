@@ -48,7 +48,7 @@ public abstract class Animal extends Entity {
         this.age = 0;
         this.health = 100;  // Default full health
         this.foodLevel = 100;  // Default full food level
-        this.waterLevel = 100;  // Default full water level
+        this.waterLevel = 10;  // Default full water level
         this.leader = null;
     }
     public Animal() {}
@@ -245,7 +245,7 @@ public abstract class Animal extends Entity {
 
     private boolean isValidMove(Point pos, List<Tile> tiles) {
         for (Tile tile : tiles) {
-            if (tile.getPos().equals(pos)) {
+            if (tile.getPos().getY() == pos.getY() && tile.getPos().getX() == pos.getX()) {
                 return tile.getHealth() != -1; // Cannot move onto water
             }
         }
@@ -294,18 +294,10 @@ public abstract class Animal extends Entity {
             int dx = rand.nextInt(3) - 1;
             int dy = rand.nextInt(3) - 1;
             newPos = new Point(this.getPos().getX() + dx, this.getPos().getY() + dy);
-        } while (isWaterTile(newPos, tiles) && !isValidMove(newPos, tiles));
+        } while (!isValidMove(newPos, tiles));
         this.setPos(newPos);
     }
 
-    private boolean isWaterTile(Point pos, List<Tile> tiles) {
-        for (Tile tile : tiles) {
-            if (tile.getPos().equals(pos) && tile.getHealth() == -1) {
-                return true;
-            }
-        }
-        return false;
-    }
 
 
     /**

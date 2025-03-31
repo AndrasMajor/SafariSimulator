@@ -206,7 +206,7 @@ public class Map {
 
     private void initScheduler() {
         scheduler = Executors.newScheduledThreadPool(1);
-        scheduler.scheduleAtFixedRate(this::moveAnimals, 0, 500, TimeUnit.MILLISECONDS);
+        scheduler.scheduleAtFixedRate(this::moveAnimals, 0, 1000, TimeUnit.MILLISECONDS);
     }
 
     private void moveAnimals() {
