@@ -146,6 +146,7 @@ public class MapScreen extends InputAdapter implements Screen {
         stage.addActor(minimap);
     }
 
+
     @Override
     public void render(float delta) {
         handleInput(delta);

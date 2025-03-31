@@ -260,7 +260,7 @@ public abstract class Animal extends Entity {
             if (t.getHealth() == -1) {
                 int tx = t.getPos().getX();
                 int ty = t.getPos().getY();
-                if (Math.abs(tx - x) <= 1 && Math.abs(ty - y) <= 1) {
+                if (Math.abs(tx - x) <= 1 && Math.abs(ty - y) == 1) {
                     return true;
                 }
             }
@@ -297,7 +297,6 @@ public abstract class Animal extends Entity {
         } while (!isValidMove(newPos, tiles));
         this.setPos(newPos);
     }
-
 
 
     /**
