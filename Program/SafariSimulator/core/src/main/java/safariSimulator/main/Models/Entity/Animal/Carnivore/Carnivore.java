@@ -26,5 +26,8 @@ public abstract class Carnivore extends Animal {
     public void hunt(){
         this.foodLevel = Math.min(this.foodLevel + 10, 100);
     }
+
+    @Override
+    public boolean isHerbivore() {return false;}
 }
 

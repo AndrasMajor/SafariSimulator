@@ -24,4 +24,7 @@ public abstract class Herbivore extends Animal {
     public void graze() {
         this.foodLevel = Math.min(this.foodLevel + 10, 100);
     }
+
+    @Override
+    public boolean isHerbivore() {return true;}
 }

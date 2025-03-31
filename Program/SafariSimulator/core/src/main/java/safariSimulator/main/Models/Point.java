@@ -13,6 +13,7 @@ public class Point {
 
     /**
      * Constructor that initializes the point with the given coordinates.
+     *
      * @param x The x-coordinate of the point.
      * @param y The y-coordinate of the point.
      */
@@ -31,6 +32,7 @@ public class Point {
 
     /**
      * Gets the x-coordinate of the point.
+     *
      * @return The x-coordinate.
      */
     public int getX() {
@@ -39,6 +41,7 @@ public class Point {
 
     /**
      * Sets the x-coordinate of the point.
+     *
      * @param x The new x-coordinate.
      */
     public void setX(int x) {
@@ -47,6 +50,7 @@ public class Point {
 
     /**
      * Gets the y-coordinate of the point.
+     *
      * @return The y-coordinate.
      */
     public int getY() {
@@ -55,6 +59,7 @@ public class Point {
 
     /**
      * Sets the y-coordinate of the point.
+     *
      * @param y The new y-coordinate.
      */
     public void setY(int y) {
