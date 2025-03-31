@@ -48,8 +48,8 @@ public abstract class Animal extends Entity {
         super(pos);
         this.age = 0;
         this.health = 100;  // Default full health
-        this.foodLevel = 100;  // Default full food level
-        this.waterLevel = 10;  // Default full water level
+        this.foodLevel = 0;  // Default full food level
+        this.waterLevel = 100;  // Default full water level
         this.leader = null;
     }
     public Animal() {}
@@ -148,7 +148,6 @@ public abstract class Animal extends Entity {
     public void drink() {
         this.waterLevel = Math.min(100, this.waterLevel + 20);
     }
-
     /**
      * Gets the maximum age of the animal.
      *
@@ -227,8 +226,12 @@ public abstract class Animal extends Entity {
 
         if (targetTile != null) {
             moveStepTowards(targetTile.getPos(), tiles);
-            if (isNextToWater(currentTile, tiles)) {
+            if (waterLevel < 50 && isNextToWater(currentTile, tiles)) {
                 drink();
+            }
+            if(this.isHerbivore() && foodLevel < 50  && currentTile.getHealth() > 0) {
+                ((Herbivore) this).graze();
+                currentTile.setHealth(currentTile.getHealth() - 20);
             }
         } else if (targetEntity != null) {
             moveStepTowards(targetEntity.getPos(), tiles);

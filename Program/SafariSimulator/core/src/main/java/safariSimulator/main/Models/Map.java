@@ -213,7 +213,7 @@ public class Map {
         for (Entity entity : entities) {
             if (entity instanceof Animal) {
                 ((Animal) entity).move(this);
-                System.out.println(((Animal) entity).getWaterLevel());
+                System.out.println(((Animal) entity).getFoodLevel());
             }
         }
     }
