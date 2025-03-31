@@ -1,5 +1,6 @@
 package safariSimulator.main.Models.Entity.Animal;
 
+import safariSimulator.main.Models.Entity.Animal.Herbivore.Herbivore;
 import safariSimulator.main.Models.Map;
 import safariSimulator.main.Models.Tile.Tile;
 import safariSimulator.main.Models.Entity.Entity;
@@ -52,6 +53,7 @@ public abstract class Animal extends Entity {
         this.leader = null;
     }
     public Animal() {}
+
 
     /**
      * Gets the age of the animal.
@@ -191,6 +193,7 @@ public abstract class Animal extends Entity {
         List<Entity> entities = map.getEntities();
         Point currentPos = this.getPos();
         List<Tile> nearbyTiles = getNearbyTiles(currentPos, tiles);
+        Tile currentTile = getCurrentTile(tiles);
 
         Tile targetTile = null;
         Entity targetEntity = null;
@@ -203,7 +206,7 @@ public abstract class Animal extends Entity {
                     break;
                 }
             }
-        } else if (foodLevel < 50 && isHerbivore()) {
+        } else if (foodLevel < 50 && this.isHerbivore()) {
             // Search for grass
             for (Tile tile : nearbyTiles) {
                 if (tile.getHealth() > 0) {
@@ -211,7 +214,7 @@ public abstract class Animal extends Entity {
                     break;
                 }
             }
-        } else if (foodLevel < 50 && !isHerbivore()) {
+        } else if (foodLevel < 50 && !this.isHerbivore()) {
             // Predator searches for prey
             for (Entity entity : entities) {
                 if (entity instanceof Animal && ((Animal) entity).isHerbivore()
@@ -224,11 +227,24 @@ public abstract class Animal extends Entity {
 
         if (targetTile != null) {
             moveStepTowards(targetTile.getPos(), tiles);
+            if (isNextToWater(currentTile, tiles)) {
+                drink();
+            }
         } else if (targetEntity != null) {
             moveStepTowards(targetEntity.getPos(), tiles);
         } else {
             moveRandomly(tiles);
         }
+    }
+
+    public Tile getCurrentTile(List<Tile> tiles) {
+        for (Tile tile : tiles) {
+            if (tile.getPos().getX() == this.getPos().getX()
+                && tile.getPos().getY() == this.getPos().getY()) {
+                return tile;
+            }
+        }
+        return null;
     }
 
     private void moveStepTowards(Point target, List<Tile> tiles) {
@@ -256,11 +272,18 @@ public abstract class Animal extends Entity {
         int x = tile.getPos().getX();
         int y = tile.getPos().getY();
 
-        for (Tile t : tiles) {
-            if (t.getHealth() == -1) {
-                int tx = t.getPos().getX();
-                int ty = t.getPos().getY();
-                if (Math.abs(tx - x) <= 1 && Math.abs(ty - y) == 1) {
+        Point[] neighbors = {
+            new Point(x - 1, y), // bal
+            new Point(x + 1, y), // jobb
+            new Point(x, y - 1), // le
+            new Point(x, y + 1)  // fel
+        };
+
+        for (Point neighborPos : neighbors) {
+            for (Tile t : tiles) {
+                if (t.getPos().getX() == neighborPos.getX()
+                    && t.getPos().getY() == neighborPos.getY()
+                    && t.getHealth() == -1) {
                     return true;
                 }
             }
@@ -268,11 +291,12 @@ public abstract class Animal extends Entity {
         return false;
     }
 
+
     private List<Tile> getNearbyTiles(Point pos, List<Tile> tiles) {
         List<Tile> nearby = new ArrayList<>();
         for (Tile tile : tiles) {
-            if (Math.abs(tile.getPos().getX() - pos.getX()) <= 1 &&
-                Math.abs(tile.getPos().getY() - pos.getY()) <= 1) {
+            if (Math.abs(tile.getPos().getX() - pos.getX()) <= 2 &&
+                Math.abs(tile.getPos().getY() - pos.getY()) <= 2) {
                 nearby.add(tile);
             }
         }
