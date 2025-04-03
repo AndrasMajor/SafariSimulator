@@ -9,8 +9,9 @@ import safariSimulator.main.Models.Objects.Plant;
 import safariSimulator.main.Models.Objects.PlantType;
 import safariSimulator.main.Models.Tile.Tile;
 import safariSimulator.main.Models.Objects.Object;
+import safariSimulator.main.Models.GameClock;
 
-import java.time.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -23,51 +24,56 @@ public class Map {
     private List<Tile> tiles;
     private List<Object> objects;
     private List<Entity> entities;
+    private GameClock gameClock;
     public int money;
-    public LocalDateTime time;
     public String savingFileName;
     public String level;
     private ScheduledExecutorService scheduler;
 
-    // CONSTRUCTURES -----------------------
-    public Map() {initScheduler();}
-    public Map(String level) {
-        tiles = new ArrayList<Tile>();
-        objects = new ArrayList<Object>();
-        entities = new ArrayList<Entity>();
+    // CONSTRUCTORS -----------------------
+    public Map() {
+        tiles = new ArrayList<>();
+        objects = new ArrayList<>();
+        entities = new ArrayList<>();
         money = 1000;
-        time = LocalDateTime.now();
-        this.level = level;
+        level = "default";
+        gameClock = new GameClock(LocalDateTime.now());
         initScheduler();
     }
+
+    public Map(String level) {
+        tiles = new ArrayList<>();
+        objects = new ArrayList<>();
+        entities = new ArrayList<>();
+        money = 1000;
+        this.level = level;
+        gameClock = new GameClock(LocalDateTime.now());
+        initScheduler();
+    }
+
     public Map(MapState mapState) {
         tiles = mapState.tiles;
         objects = mapState.objects;
         entities = mapState.entities;
         money = mapState.money;
-        time = LocalDateTime.parse(mapState.timeString);
+        gameClock = new GameClock(LocalDateTime.parse(mapState.timeString));
         savingFileName = mapState.savingFileName;
         level = mapState.level;
         initScheduler();
     }
     // -------------------------------------
 
-    // MAP GENERATING ----------------------
-
-    public void generateMap(){
+    // MAP GENERATION ----------------------
+    public void generateMap() {
         MapGenerator mapGenerator = new MapGenerator();
         int[][] mapnumbers = mapGenerator.getTileMap();
 
-        for (int i = 0; i < mapGenerator.SIZE; i++)
-        {
-            for(int j = 0; j < mapGenerator.SIZE; j++){
+        for (int i = 0; i < mapGenerator.SIZE; i++) {
+            for (int j = 0; j < mapGenerator.SIZE; j++) {
                 tiles.add(new Tile(new Point(i, j), mapnumbers[i][j]));
             }
         }
     }
-
-
-
 
     // -------------------------------------
 
@@ -92,12 +98,27 @@ public class Map {
         }
         return null;
     }
+
+    public LocalDateTime getTime() {
+        return gameClock.getCurrentTime();
+    }
+
+
+
     // -------------------------------------
 
     // SETTERS -----------------------------
-    public void setTiles(List<Tile> tiles) { this.tiles = tiles; }
-    public void setObjects(List<Object> objects) { this.objects = objects; }
-    public void setEntities(List<Entity> entities) { this.entities = entities; }
+    public void setTiles(List<Tile> tiles) {
+        this.tiles = tiles;
+    }
+
+    public void setObjects(List<Object> objects) {
+        this.objects = objects;
+    }
+
+    public void setEntities(List<Entity> entities) {
+        this.entities = entities;
+    }
 
     //--------------------------------------
 
@@ -108,16 +129,14 @@ public class Map {
                 entity.setPos(new Point(0, 0));
             } else {
                 List<Tile> nonWaterTiles = new ArrayList<>();
-                Random random = new Random();
-
                 for (Tile tile : tiles) {
                     if (tile.getHealth() >= 0) {
-                       nonWaterTiles.add(tile);
+                        nonWaterTiles.add(tile);
                     }
                 }
                 if (!nonWaterTiles.isEmpty()) {
-                    Random random2 = new Random();
-                    entity.setPos(nonWaterTiles.get(random2.nextInt(nonWaterTiles.size())).getPos());
+                    Random random = new Random();
+                    entity.setPos(nonWaterTiles.get(random.nextInt(nonWaterTiles.size())).getPos());
                 } else {
                     return -1;
                 }
@@ -130,8 +149,8 @@ public class Map {
         return 0;
     }
 
-    public int buyObject(Object object){
-        if(this.money >= object.price){
+    public int buyObject(Object object) {
+        if (this.money >= object.price) {
             objects.add(object);
             this.money -= object.price;
             return 1;
@@ -157,12 +176,12 @@ public class Map {
         }
     }
 
-    public void sellEntity(Animal animal){
+    public void sellEntity(Animal animal) {
         this.entities.remove(animal);
         this.money += animal.price;
     }
 
-    public void sellObject(Object object){
+    public void sellObject(Object object) {
         this.objects.remove(object);
         this.money += object.price;
     }
@@ -202,6 +221,10 @@ public class Map {
     public int getHeight() {
         return (int) Math.sqrt(tiles.size());
     }
+
+    public boolean isPaused() {
+        return gameClock.isPaused();
+    }
     // -------------------------------------
 
     private void initScheduler() {
@@ -210,9 +233,22 @@ public class Map {
     }
 
     private void moveAnimals() {
-        for (Entity entity : entities) {
-            if (entity instanceof Animal) {
-                ((Animal) entity).move(this);
+        if (gameClock.isPaused()) return;
+
+        long hours = gameClock.getIncrementPerTick().toHours();
+
+        // Fallback to at least one movement if it's 0 (safety)
+        int ticks = (int) Math.max(1, hours);
+
+        for (int i = 0; i < ticks; i++) {
+            for (Entity entity : entities) {
+                if (entity instanceof Animal) {
+                    ((Animal) entity).move(this);
+                    if ( !((Animal) entity).isAlive()) {
+                        entities.remove(entity);
+                        break; // Exit the loop to avoid ConcurrentModificationException
+                    }
+                }
             }
         }
     }
@@ -221,9 +257,34 @@ public class Map {
         if (scheduler != null) {
             scheduler.shutdown();
         }
+        if (gameClock != null) {
+            gameClock.stop();
+        }
     }
 
+    // GAME CLOCK CONTROLS -----------------
+    public void pauseGameClock() {
+        gameClock.pause();
+    }
 
+    public void resumeGameClock() {
+        gameClock.resume();
+    }
 
+    public void setSpeedToHourPerSecond() {
+        gameClock.setSpeedToHourPerSecond();
+    }
 
+    public void setSpeedToDayPerSecond() {
+        gameClock.setSpeedToDayPerSecond();
+    }
+
+    public void setSpeedToWeekPerSecond() {
+        gameClock.setSpeedToWeekPerSecond();
+    }
+
+    public void resetClockSpeed() {
+        gameClock.resetSpeed();
+    }
+    // -------------------------------------
 }
