@@ -22,7 +22,7 @@ public class MapState {
         objects = map.getObjects();
         entities = map.getEntities();
         money = map.money;
-        timeString = map.time.toString();
+        // timeString = map.time.toString();
         savingFileName = map.savingFileName;
         level = map.level;
     }

@@ -9,11 +9,13 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 
 import safariSimulator.main.Models.Entity.Animal.Carnivore.Hyena;
@@ -64,6 +66,11 @@ public class MapScreen extends InputAdapter implements Screen {
     private Minimap minimap;
 
     private ShaderProgram tileShader;
+    private TextButton pauseButton;
+    private TextButton speedButton;
+    private Label dateLabel;
+    private int speedState = 0; // 0 = hour/sec, 1 = day/sec, 2 = week/sec
+
 
     public MapScreen(String level) {
         map = new Map(level);
@@ -139,6 +146,57 @@ public class MapScreen extends InputAdapter implements Screen {
         bottomBar.add(shopButton).pad(10).width(150).height(50).left();
         bottomBar.add(exitButton).pad(10).width(150).height(50).left();
         stage.addActor(bottomBar);
+        Skin skin = new Skin(Gdx.files.internal("uiskin.json"));
+
+        Table topBar = new Table();
+        topBar.setFillParent(true);
+        topBar.top();
+
+        pauseButton = new TextButton("⏸", skin);
+        pauseButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                if (map.isPaused()) {
+                    map.resumeGameClock();
+                    pauseButton.setText("⏸");
+                } else {
+                    map.pauseGameClock();
+                    pauseButton.setText("▶");
+                }
+            }
+        });
+
+        speedButton = new TextButton("→", skin);
+        speedButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                speedState = (speedState + 1) % 3;
+                switch (speedState) {
+                    case 0:
+                        map.setSpeedToHourPerSecond();
+                        speedButton.setText("→");
+                        break;
+                    case 1:
+                        map.setSpeedToDayPerSecond();
+                        speedButton.setText("→→");
+                        break;
+                    case 2:
+                        map.setSpeedToWeekPerSecond();
+                        speedButton.setText("→→→");
+                        break;
+                }
+            }
+        });
+
+        dateLabel = new Label("", skin);
+        dateLabel.setAlignment(Align.center);
+
+        topBar.add(pauseButton).pad(10).width(50).height(50);
+        topBar.add(dateLabel).pad(10).width(300).height(50);
+        topBar.add(speedButton).pad(10).width(80).height(50);
+
+        stage.addActor(topBar);
+
 
         minimap = new Minimap(camera, map);
         minimap.setSize(Minimap.SIZE, Minimap.SIZE);
@@ -233,6 +291,7 @@ public class MapScreen extends InputAdapter implements Screen {
         batch.setShader(null); // 🔥 reset shader so minimap & UI render normally
 
         stage.act(delta);
+        dateLabel.setText(map.getTime().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
         stage.draw();
     }
 
