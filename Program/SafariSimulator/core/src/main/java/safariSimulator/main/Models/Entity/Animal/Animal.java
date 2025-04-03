@@ -1,5 +1,7 @@
 package safariSimulator.main.Models.Entity.Animal;
 
+import safariSimulator.main.Models.Entity.Animal.Carnivore.Carnivore;
+import safariSimulator.main.Models.Entity.Animal.Herbivore.Herbivore;
 import safariSimulator.main.Models.Map;
 import safariSimulator.main.Models.Tile.Tile;
 import safariSimulator.main.Models.Entity.Entity;
@@ -47,11 +49,12 @@ public abstract class Animal extends Entity {
         super(pos);
         this.age = 0;
         this.health = 100;  // Default full health
-        this.foodLevel = 100;  // Default full food level
-        this.waterLevel = 10;  // Default full water level
+        this.foodLevel = 50;  // Default full food level
+        this.waterLevel = 50;  // Default full water level
         this.leader = null;
     }
     public Animal() {}
+
 
     /**
      * Gets the age of the animal.
@@ -144,9 +147,8 @@ public abstract class Animal extends Entity {
      * The water level is capped at 100 to prevent overflow.
      */
     public void drink() {
-        this.waterLevel = Math.min(100, this.waterLevel + 20);
+        this.waterLevel = Math.min(100, this.waterLevel + 30);
     }
-
     /**
      * Gets the maximum age of the animal.
      *
@@ -185,17 +187,31 @@ public abstract class Animal extends Entity {
 
     public abstract boolean isHerbivore();
 
+    public void updateMemory(Tile currentTile) {
+        if (!memory.contains(currentTile)) {
+            memory.add(currentTile);
+        }
+    }
+
 
     public void move(Map map) {
         List<Tile> tiles = map.getTiles();
         List<Entity> entities = map.getEntities();
         Point currentPos = this.getPos();
         List<Tile> nearbyTiles = getNearbyTiles(currentPos, tiles);
+        Tile currentTile = getCurrentTile(tiles);
 
         Tile targetTile = null;
         Entity targetEntity = null;
 
+        if(waterLevel >= 50 && foodLevel >= 50 && leader == null) {
+            targetTile = currentTile;
+        }
+
+
         if (waterLevel < 50) {
+            // decrease the hp of the animal
+            decreaseHealth(1);
             // Search for water-adjacent land tile
             for (Tile tile : nearbyTiles) {
                 if (tile.getHealth() != -1 && isNextToWater(tile, tiles)) {
@@ -203,7 +219,10 @@ public abstract class Animal extends Entity {
                     break;
                 }
             }
-        } else if (foodLevel < 50 && isHerbivore()) {
+        }
+        if (foodLevel < 50 && this.isHerbivore()) {
+            // decrease the hp of the animal
+            decreaseHealth(1);
             // Search for grass
             for (Tile tile : nearbyTiles) {
                 if (tile.getHealth() > 0) {
@@ -211,7 +230,9 @@ public abstract class Animal extends Entity {
                     break;
                 }
             }
-        } else if (foodLevel < 50 && !isHerbivore()) {
+        } else if (foodLevel < 50 && !this.isHerbivore()) {
+            // decrease the hp of the animal
+            decreaseHealth(1);
             // Predator searches for prey
             for (Entity entity : entities) {
                 if (entity instanceof Animal && ((Animal) entity).isHerbivore()
@@ -224,11 +245,39 @@ public abstract class Animal extends Entity {
 
         if (targetTile != null) {
             moveStepTowards(targetTile.getPos(), tiles);
+            if (waterLevel < 50 && isNextToWater(currentTile, tiles)) {
+                drink();
+            }
+            if(this.isHerbivore() && foodLevel < 50  && currentTile.getHealth() > 0) {
+                ((Herbivore) this).graze();
+                currentTile.setHealth(currentTile.getHealth() - 20);
+            }
         } else if (targetEntity != null) {
             moveStepTowards(targetEntity.getPos(), tiles);
+            if(this.getPos().getX() == targetEntity.getPos().getX()
+                && this.getPos().getY() == targetEntity.getPos().getY()) {
+                ((Carnivore) this).hunt(targetEntity);
+            }
         } else {
             moveRandomly(tiles);
         }
+
+        if(foodLevel >= 50 && waterLevel >= 50){
+            increaseHealth(2);
+        }
+        decreaseFoodLevel(1);
+        decreaseWaterLevel(1);
+        ageUp();
+    }
+
+    public Tile getCurrentTile(List<Tile> tiles) {
+        for (Tile tile : tiles) {
+            if (tile.getPos().getX() == this.getPos().getX()
+                && tile.getPos().getY() == this.getPos().getY()) {
+                return tile;
+            }
+        }
+        return null;
     }
 
     private void moveStepTowards(Point target, List<Tile> tiles) {
@@ -256,11 +305,18 @@ public abstract class Animal extends Entity {
         int x = tile.getPos().getX();
         int y = tile.getPos().getY();
 
-        for (Tile t : tiles) {
-            if (t.getHealth() == -1) {
-                int tx = t.getPos().getX();
-                int ty = t.getPos().getY();
-                if (Math.abs(tx - x) <= 1 && Math.abs(ty - y) == 1) {
+        Point[] neighbors = {
+            new Point(x - 1, y), // bal
+            new Point(x + 1, y), // jobb
+            new Point(x, y - 1), // le
+            new Point(x, y + 1)  // fel
+        };
+
+        for (Point neighborPos : neighbors) {
+            for (Tile t : tiles) {
+                if (t.getPos().getX() == neighborPos.getX()
+                    && t.getPos().getY() == neighborPos.getY()
+                    && t.getHealth() == -1) {
                     return true;
                 }
             }
@@ -268,11 +324,12 @@ public abstract class Animal extends Entity {
         return false;
     }
 
+
     private List<Tile> getNearbyTiles(Point pos, List<Tile> tiles) {
         List<Tile> nearby = new ArrayList<>();
         for (Tile tile : tiles) {
-            if (Math.abs(tile.getPos().getX() - pos.getX()) <= 1 &&
-                Math.abs(tile.getPos().getY() - pos.getY()) <= 1) {
+            if (Math.abs(tile.getPos().getX() - pos.getX()) <= 3 &&
+                Math.abs(tile.getPos().getY() - pos.getY()) <= 3) {
                 nearby.add(tile);
             }
         }
@@ -306,7 +363,7 @@ public abstract class Animal extends Entity {
      * @return True if the animal is alive (health > 0), otherwise false.
      */
     public boolean isAlive(){
-        return this.health > 0;
+        return (this.health > 0 && this.age <= maxAge);
     }
 
 

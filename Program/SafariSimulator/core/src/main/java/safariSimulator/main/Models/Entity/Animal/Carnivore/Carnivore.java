@@ -1,6 +1,7 @@
 package safariSimulator.main.Models.Entity.Animal.Carnivore;
 
 import safariSimulator.main.Models.Entity.Animal.Animal;
+import safariSimulator.main.Models.Entity.Entity;
 import safariSimulator.main.Models.Objects.RoadDirection;
 import safariSimulator.main.Models.Point;
 
@@ -23,8 +24,9 @@ public abstract class Carnivore extends Animal {
     public Carnivore() {}
 
 
-    public void hunt(){
-        this.foodLevel = Math.min(this.foodLevel + 10, 100);
+    public void hunt(Entity targetEntity) {
+        ((Animal)targetEntity).decreaseHealth(100);
+        this.foodLevel = Math.min(this.foodLevel + 70, 100);
     }
 
     @Override
