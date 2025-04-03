@@ -7,7 +7,7 @@ import safariSimulator.main.Models.Point;
  * The Lion class extends the Carnivore class and inherits all its properties and behaviors.
  * It defines specific characteristics such as the maximum age of a lion.
  */
-public class Lion extends Carnivore{
+public class Lion extends Carnivore {
 
     /**
      * Constructor that initializes a lion with a given position and speed.
