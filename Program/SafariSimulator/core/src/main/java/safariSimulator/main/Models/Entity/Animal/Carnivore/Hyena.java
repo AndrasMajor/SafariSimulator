@@ -17,7 +17,7 @@ public class Hyena extends Carnivore {
      */
     public Hyena(Point pos) {
         super(pos); // Calls the constructor of the parent Carnivore class
-        this.maxAge = 25;   // Sets the maximum age of the hyena to 25 years
+        this.maxAge = 250;   // Sets the maximum age of the hyena to 25 years
         this.speed = 10; //Sets the speed of the hyena to 1
         this.price = 50;
     }

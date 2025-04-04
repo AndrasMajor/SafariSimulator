@@ -70,10 +70,10 @@ public class ShopContainer extends Window {
         Label elephantPrice = new Label("100$", skin);
         Label roadPrice = new Label("80$", skin);
         Label jeepPrice = new Label("50$", skin);
-        Label grassPrice = new Label("20$", skin);
-        Label treePrice = new Label("20$", skin);
+        Label grassPrice = new Label("30$", skin);
+        Label treePrice = new Label("40$", skin);
         Label bushPrice = new Label("30$", skin);
-        Label waterPrice = new Label("40$", skin);
+        Label waterPrice = new Label("30$", skin);
 
         Table table = new Table();
         table.setFillParent(true);

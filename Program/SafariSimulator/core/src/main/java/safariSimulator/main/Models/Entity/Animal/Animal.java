@@ -72,7 +72,7 @@ public abstract class Animal extends Entity {
      */
     public void ageUp() {
         if (this.age < this.maxAge) {
-            this.age++;
+            this.age += 1;
         }
     }
 
@@ -211,10 +211,10 @@ public abstract class Animal extends Entity {
         Tile targetTile = null;
         Entity targetEntity = null;
 
-        if(waterLevel >= 50 && foodLevel >= 50 && leader == null) {
+        if(waterLevel >= 90 && foodLevel >= 90 && leader == null) {
             targetTile = currentTile;
         }else if(waterLevel >= 50 && foodLevel >= 50 && leader != null) {
-            targetTile = leader.getCurrentTile(tiles);
+            targetTile = getClosestValidTileToLeader(tiles, entities);
         }
 
 
@@ -222,6 +222,9 @@ public abstract class Animal extends Entity {
             // decrease the hp of the animal
             decreaseHealth(1);
             // Search for water-adjacent land tile
+            if(!waterMemory.isEmpty()) {
+                targetTile = waterMemory.getLast();
+            }
             for (Tile tile : nearbyTiles) {
                 if (tile.getHealth() != -1 && isNextToWater(tile, tiles)) {
                     targetTile = tile;
@@ -232,6 +235,10 @@ public abstract class Animal extends Entity {
         if (foodLevel < 50 && this.isHerbivore()) {
             // decrease the hp of the animal
             decreaseHealth(1);
+
+            if(!grassMemory.isEmpty()) {
+                targetTile = grassMemory.getLast();
+            }
             // Search for grass
             for (Tile tile : nearbyTiles) {
                 if (tile.getHealth() > 0) {
@@ -256,9 +263,11 @@ public abstract class Animal extends Entity {
             moveStepTowards(targetTile.getPos(), tiles);
             if (waterLevel < 50 && isNextToWater(currentTile, tiles)) {
                 drink();
+                waterMemory.add(currentTile);
             }
             if(this.isHerbivore() && foodLevel < 50  && currentTile.getHealth() > 0) {
                 ((Herbivore) this).graze();
+                grassMemory.add(currentTile);
                 currentTile.setHealth(currentTile.getHealth() - 20);
             }
         } else if (targetEntity != null) {
@@ -372,12 +381,52 @@ public abstract class Animal extends Entity {
      * @return True if the animal is alive (health > 0), otherwise false.
      */
     public boolean isAlive(){
-        return (this.getHealth() > 0 && this.getAge() <= maxAge);
+        return (this.getHealth() > 0 && this.getAge() < maxAge);
     }
 
 
     public void breed(){
         //TODO: Implement the breeding logic for animals
     }
+
+    private Tile getClosestValidTileToLeader(List<Tile> tiles, List<Entity> entities) {
+        if (leader == null) return null;
+
+        Tile leaderTile = leader.getCurrentTile(tiles);
+        List<Tile> nearbyTiles = getNearbyTiles(leaderTile.getPos(), tiles);
+
+        Tile bestTile = null;
+        double bestDistance = Double.MAX_VALUE;
+
+        for (Tile tile : nearbyTiles) {
+            if (tile.getHealth() == -1) continue; // Vízen nem mozoghatunk
+            boolean occupied = false;
+
+            // Ellenőrizzük, hogy van-e más entitás a mezőn
+            for (Entity entity : entities) {
+                if (entity.getPos().equals(tile.getPos())) {
+                    occupied = true;
+                    break;
+                }
+            }
+
+            if (!occupied) {
+                double dx = this.getPos().getX() - tile.getPos().getX();
+                double dy = this.getPos().getY() - tile.getPos().getY();
+                double distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance < bestDistance) {
+                    bestDistance = distance;
+                    bestTile = tile;
+                }
+            }
+        }
+        return bestTile;
+    }
+
+
+
+
+
 
 }
