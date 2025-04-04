@@ -27,6 +27,7 @@ import safariSimulator.main.Models.Entity.Animal.Carnivore.Lion;
 import safariSimulator.main.Models.Entity.Animal.Herbivore.Elephant;
 import safariSimulator.main.Models.Entity.Animal.Herbivore.Zebra;
 import safariSimulator.main.Models.Entity.Entity;
+import safariSimulator.main.Models.Entity.Human.Poacher;
 import safariSimulator.main.Models.Entity.Jeep;
 import safariSimulator.main.Models.Map;
 import safariSimulator.main.Models.Objects.Plant;
@@ -55,6 +56,7 @@ public class MapScreen extends InputAdapter implements Screen {
     private Texture treeTexture;
     private Texture bushTexture;
     private Texture roadTexture;
+    private Texture poacherTexture;
 
     public Map map;
 
@@ -105,11 +107,13 @@ public class MapScreen extends InputAdapter implements Screen {
         elephantTexture = new Texture(Gdx.files.internal("entities/elephant.png"));
         zebraTexture = new Texture(Gdx.files.internal("entities/zebra.png"));
 
+        poacherTexture = new Texture(Gdx.files.internal("entities/poacher.png"));
         jeepTexture = new Texture(Gdx.files.internal("entities/jeep.png"));
 
         treeTexture = new Texture(Gdx.files.internal("objects/tree.png"));
         bushTexture = new Texture(Gdx.files.internal("objects/bush.png"));
         roadTexture = new Texture(Gdx.files.internal("objects/road.png"));
+
 
         ShaderProgram.pedantic = false;
         tileShader = new ShaderProgram(
@@ -252,7 +256,7 @@ public class MapScreen extends InputAdapter implements Screen {
         camera.update();
         batch.setProjectionMatrix(camera.combined);
 
-        Gdx.gl.glClearColor(0, 0, 0, 0);
+        Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         batch.setShader(tileShader);
@@ -298,6 +302,8 @@ public class MapScreen extends InputAdapter implements Screen {
                 entityTexture = hyenaTexture;
             } else if( entity instanceof Jeep){
                 entityTexture = jeepTexture;
+            } else if (entity instanceof Poacher) {
+                entityTexture = poacherTexture;
             }
 
             if (entityTexture != null) {

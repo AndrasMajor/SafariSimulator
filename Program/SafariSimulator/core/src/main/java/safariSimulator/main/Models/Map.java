@@ -3,6 +3,7 @@ package safariSimulator.main.Models;
 import safariSimulator.main.Database.MapState;
 import safariSimulator.main.Models.Entity.Animal.Animal;
 import safariSimulator.main.Models.Entity.Entity;
+import safariSimulator.main.Models.Entity.Human.Poacher;
 import safariSimulator.main.Models.Entity.Jeep;
 import safariSimulator.main.Models.MapGeneration.MapGenerator;
 import safariSimulator.main.Models.Objects.Plant;
@@ -21,9 +22,9 @@ import java.util.concurrent.TimeUnit;
 
 public class Map {
 
-    private List<Tile> tiles;
+    public List<Tile> tiles;
     private List<Object> objects;
-    private List<Entity> entities;
+    public List<Entity> entities;
     private GameClock gameClock;
     public int money;
     public String savingFileName;
@@ -236,6 +237,8 @@ public class Map {
     private void initScheduler() {
         scheduler = Executors.newScheduledThreadPool(1);
         scheduler.scheduleAtFixedRate(this::moveAnimals, 0, 1000, TimeUnit.MILLISECONDS);
+        /// EZT KOMMENTELD KI HA NEM AKAROD HOGY JÖJJÖN POACHER
+        scheduler.scheduleAtFixedRate(this::movePoacher, 0, 1000, TimeUnit.MILLISECONDS);
     }
 
     private void moveAnimals() {
@@ -258,6 +261,55 @@ public class Map {
             }
         }
     }
+
+    private void movePoacher() {
+        if (gameClock.isPaused()) return;
+
+        long hours = gameClock.getIncrementPerTick().toHours();
+        int ticks = (int) Math.max(1, hours);
+
+        for (int i = 0; i < ticks; i++) {
+            if (addPoacher()) {
+                for (Entity entity : entities) {
+                    if (entity instanceof Poacher) {
+                        boolean isHunted = ((Poacher) entity).move(this);
+                        if (isHunted) break;
+                    }
+                }
+            }
+        }
+    }
+
+    private boolean addPoacher() {
+        for (Entity entity : entities) {
+            if (entity instanceof Poacher) {
+                return true;
+            }
+        }
+        int animalCount = (int) entities.stream().filter(e -> e instanceof Animal && ((Animal) e).isAlive()).count();
+        if (animalCount == 0) return false;
+
+        double baseChance = 1;
+        double maxChance = 1;
+        double spawnChance = Math.min(animalCount / 10.0 * baseChance, maxChance);
+
+        Random random = new Random();
+        if (random.nextDouble() < spawnChance) {
+            entities.add(new Poacher(this, setStartPointForPoacher(this.getTiles())));
+            return true;
+        }
+        return false;
+    }
+
+    private Point setStartPointForPoacher(List<Tile> tiles) {
+        Tile startTile;
+        do {
+            int randInt = new Random().nextInt(tiles.size());
+            startTile = tiles.get(randInt);
+        } while ((startTile.pos.getX() != 0 && startTile.pos.getY() != 0) || startTile.health == -1);
+        return startTile.pos;
+    }
+
 
     public void stopScheduler() {
         if (scheduler != null) {

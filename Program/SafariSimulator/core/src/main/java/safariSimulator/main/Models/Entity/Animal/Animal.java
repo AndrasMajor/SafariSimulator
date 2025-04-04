@@ -21,7 +21,7 @@ public abstract class Animal extends Entity {
     private int age;
 
     // The health status of the animal
-    private int health;
+    public int health;
 
     // The current food level of the animal
     protected int foodLevel;
