@@ -33,7 +33,8 @@ public abstract class Animal extends Entity {
     protected int maxAge;
 
     // Memory of visited tiles
-    private List<Tile> memory = new ArrayList<Tile>();
+    private List<Tile> waterMemory = new ArrayList<Tile>();
+    private List<Tile> grassMemory = new ArrayList<Tile>();
 
     // The leader of the animal (if part of a herd or pack)
     private Animal leader;
@@ -49,8 +50,8 @@ public abstract class Animal extends Entity {
         super(pos);
         this.age = 0;
         this.health = 100;  // Default full health
-        this.foodLevel = 50;  // Default full food level
-        this.waterLevel = 50;  // Default full water level
+        this.foodLevel = 100;  // Default full food level
+        this.waterLevel = 100;  // Default full water level
         this.leader = null;
     }
     public Animal() {}
@@ -163,9 +164,10 @@ public abstract class Animal extends Entity {
      *
      * @return The list of tiles the animal remembers.
      */
-    public List<Tile> getMemory() {
-        return this.memory;
+    public List<Tile> getWaterMemory() {
+        return this.waterMemory;
     }
+    public List<Tile> getGrassMemory() {return this.grassMemory;}
 
     /**
      * Sets the leader of the animal.
@@ -187,9 +189,14 @@ public abstract class Animal extends Entity {
 
     public abstract boolean isHerbivore();
 
-    public void updateMemory(Tile currentTile) {
-        if (!memory.contains(currentTile)) {
-            memory.add(currentTile);
+    public void updateWaterMemory(Tile currentTile) {
+        if (!waterMemory.contains(currentTile)) {
+            waterMemory.add(currentTile);
+        }
+    }
+    public void updateGrassMemory(Tile currentTile) {
+        if (!grassMemory.contains(currentTile)) {
+            grassMemory.add(currentTile);
         }
     }
 
@@ -206,6 +213,8 @@ public abstract class Animal extends Entity {
 
         if(waterLevel >= 50 && foodLevel >= 50 && leader == null) {
             targetTile = currentTile;
+        }else if(waterLevel >= 50 && foodLevel >= 50 && leader != null) {
+            targetTile = leader.getCurrentTile(tiles);
         }
 
 

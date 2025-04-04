@@ -404,8 +404,10 @@ public class MapScreen extends InputAdapter implements Screen {
             if (clickedTile != null) {
                 if(selectedTileType == -1 && clickedTile.getHealth() != -1){
                     map.buyWater(tileX, tileY);
+                    selectedTileType = 0;
                 }else if(selectedTileType == 100 && clickedTile.getHealth() <= 0){
                     map.buyGrass(tileX, tileY);
+                    selectedTileType = 0;
                 }
             }
         }

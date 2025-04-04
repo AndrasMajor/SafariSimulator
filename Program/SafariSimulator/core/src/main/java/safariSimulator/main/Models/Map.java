@@ -252,7 +252,11 @@ public class Map {
         for (int i = 0; i < ticks; i++) {
             for (Entity entity : entities) {
                 if (entity instanceof Animal) {
+                    setLeader();
                     ((Animal) entity).move(this);
+                    System.out.println(((Animal) entity).getLeader());
+                    System.out.println(((Animal) entity).getWaterLevel());
+                    System.out.println(((Animal) entity).getFoodLevel());
                     if ( !((Animal) entity).isAlive()) {
                         entities.remove(entity);
                         break; // Exit the loop to avoid ConcurrentModificationException
@@ -345,4 +349,36 @@ public class Map {
         gameClock.resetSpeed();
     }
     // -------------------------------------
+
+    private Animal selectLeader(Animal animal) {
+        Animal oldest = null;
+
+        for (Entity entity : entities) {
+            if (!(entity instanceof Animal)) continue;
+
+            Animal other = (Animal) entity;
+
+            if (animal.getClass().equals(other.getClass())) {
+                if (oldest == null || other.getAge() > oldest.getAge()) {
+                    oldest = other;
+                }
+            }
+        }
+
+        return oldest;
+    }
+
+    private void setLeader() {
+        for (Entity entity : entities) {
+            if (entity instanceof Animal animal) {
+                Animal leader = selectLeader(animal);
+
+                if (animal == leader) {
+                    animal.setLeader(null);
+                } else {
+                    animal.setLeader(leader);
+                }
+            }
+        }
+    }
 }
