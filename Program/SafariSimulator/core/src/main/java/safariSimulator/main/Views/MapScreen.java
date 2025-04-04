@@ -3,9 +3,11 @@ package safariSimulator.main.Views;
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -15,6 +17,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 
@@ -35,6 +39,7 @@ import safariSimulator.main.Models.Objects.Object;
 public class MapScreen extends InputAdapter implements Screen {
 
     public PlantType selectedPlantType = null;
+    public int selectedTileType = 0;
 
     private BitmapFont font;
 
@@ -60,6 +65,7 @@ public class MapScreen extends InputAdapter implements Screen {
     public Stage stage;
     public TextButton shopButton;
     public TextButton exitButton;
+    public Label moneyLabel;
     private Skin skin;
     public ShopContainer shopContainer;
     public SaveContainer saveContainer;
@@ -126,6 +132,8 @@ public class MapScreen extends InputAdapter implements Screen {
         Table bottomBar = new Table();
         bottomBar.setFillParent(true);
         bottomBar.bottom();
+
+        moneyLabel = new Label(this.map.money + "$", skin);
 
         shopButton = new TextButton("Shop", skin);
         shopButton.addListener(new ClickListener() {
@@ -202,6 +210,37 @@ public class MapScreen extends InputAdapter implements Screen {
         minimap.setSize(Minimap.SIZE, Minimap.SIZE);
         minimap.setPosition(Gdx.graphics.getWidth() - Minimap.SIZE - 10, Gdx.graphics.getHeight() - Minimap.SIZE - 10);
         stage.addActor(minimap);
+
+        // Money label jobb alsó sarokban
+        // Egyedi stílus létrehozása
+        BitmapFont moneyFont = new BitmapFont();
+        moneyFont.getData().setScale(2f); // nagyobb szöveg
+        moneyFont.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+
+        Label.LabelStyle moneyStyle = new Label.LabelStyle();
+        moneyStyle.font = moneyFont;
+        moneyStyle.fontColor = com.badlogic.gdx.graphics.Color.GOLD;
+
+        // Háttér hozzáadása (fekete átlátszatlan)
+        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+        pixmap.setColor(0, 0, 0, 0.7f);
+        pixmap.fill();
+        Texture bgTexture = new Texture(pixmap);
+        pixmap.dispose();
+
+        Drawable background = new TextureRegionDrawable(new TextureRegion(bgTexture));
+        moneyStyle.background = background;
+
+
+        moneyLabel = new Label(map.money + "$", moneyStyle);
+        moneyLabel.setAlignment(Align.right);
+
+        Table moneyTable = new Table();
+        moneyTable.setFillParent(true);
+        moneyTable.bottom().right();
+        moneyTable.add(moneyLabel).pad(10).right().bottom();
+        stage.addActor(moneyTable);
+
     }
 
 
@@ -213,14 +252,12 @@ public class MapScreen extends InputAdapter implements Screen {
         camera.update();
         batch.setProjectionMatrix(camera.combined);
 
-        Gdx.gl.glClearColor(1, 0, 0, 1);
+        Gdx.gl.glClearColor(0, 0, 0, 0);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         batch.setShader(tileShader);
         batch.begin();
 
-        String moneyText = "Money : " + this.map.money + "$";
-        font.draw(batch, moneyText, Gdx.graphics.getWidth() - 100, 50);
 
         for (Tile tile : map.getTiles()) {
             Texture tileTexture;
@@ -283,9 +320,23 @@ public class MapScreen extends InputAdapter implements Screen {
 
             if (objectTexture != null) {
                 Point pos = object.getPos();
-                batch.draw(objectTexture, pos.getX() * 32, pos.getY() * 32, 32, 32);
+                for(Tile tile : map.getTiles()){
+                    if(tile.getPos().getX() == pos.getX() && tile.getPos().getY() == pos.getY()){
+                        if(tile.getHealth() > 0){
+                            batch.draw(objectTexture, pos.getX() * 32, pos.getY() * 32, 32, 32);
+                        }
+                        else{
+                            map.getObjects().remove(object);
+                            break;
+                        }
+                    }
+                }
+
             }
         }
+
+        moneyLabel.setText(map.money + "$");
+
 
         batch.end();
         batch.setShader(null); // 🔥 reset shader so minimap & UI render normally
@@ -331,7 +382,25 @@ public class MapScreen extends InputAdapter implements Screen {
             Tile clickedTile = map.getTileAt(tileX, tileY);
             if (clickedTile != null && clickedTile.getHealth() > 0) {
                 map.buyObject(new Plant(new Point(tileX, tileY), selectedPlantType));
+                if(selectedPlantType == PlantType.Tree){
+                    clickedTile.setHealth(clickedTile.getHealth() + 100);
+                } else if (selectedPlantType == PlantType.Bush) {
+                    clickedTile.setHealth(clickedTile.getHealth() + 50);
+                }
                 selectedPlantType = null;
+            }
+        }else if(selectedTileType != 0){
+            Vector3 worldCoordinates = camera.unproject(new Vector3(screenX, screenY, 0));
+            int tileX = (int) (worldCoordinates.x / 32);
+            int tileY = (int) (worldCoordinates.y / 32);
+
+            Tile clickedTile = map.getTileAt(tileX, tileY);
+            if (clickedTile != null) {
+                if(selectedTileType == -1 && clickedTile.getHealth() != -1){
+                    map.buyWater(tileX, tileY);
+                }else if(selectedTileType == 100 && clickedTile.getHealth() <= 0){
+                    map.buyGrass(tileX, tileY);
+                }
             }
         }
         return super.touchDown(screenX, screenY, pointer, button);

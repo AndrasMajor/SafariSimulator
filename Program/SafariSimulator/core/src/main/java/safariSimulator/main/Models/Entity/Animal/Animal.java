@@ -363,7 +363,7 @@ public abstract class Animal extends Entity {
      * @return True if the animal is alive (health > 0), otherwise false.
      */
     public boolean isAlive(){
-        return (this.health > 0 && this.age <= maxAge);
+        return (this.getHealth() > 0 && this.getAge() <= maxAge);
     }
 
 
