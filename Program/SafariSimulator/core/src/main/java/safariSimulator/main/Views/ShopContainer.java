@@ -34,6 +34,8 @@ public class ShopContainer extends Window {
 
     public final int treePrice = 40;
     public final int bushPrice = 30;
+    public final int waterPrice = 30;
+    public final int grassPrice = 30;
 
     private Window insufficientFundsWindow;
 
@@ -188,10 +190,10 @@ public class ShopContainer extends Window {
         waterButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                if(ShopContainer.this.mapScreen.map.money > 20){
+                if (ShopContainer.this.mapScreen.map.money > ShopContainer.this.waterPrice) {
+                    mapScreen.selectedTileType = -1;
                     ShopContainer.this.remove();
-                    ShopContainer.this.mapScreen.stage.addActor(ShopContainer.this.mapScreen.shopButton);
-                }else {
+                }else{
                     ShopContainer.this.mapScreen.stage.addActor(insufficientFundsWindow);
                 }
             }
@@ -199,10 +201,10 @@ public class ShopContainer extends Window {
         grassButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                if(ShopContainer.this.mapScreen.map.money > 20){
+                if (ShopContainer.this.mapScreen.map.money > ShopContainer.this.grassPrice) {
+                    mapScreen.selectedTileType = 100;
                     ShopContainer.this.remove();
-                    ShopContainer.this.mapScreen.stage.addActor(ShopContainer.this.mapScreen.shopButton);
-                }else {
+                }else{
                     ShopContainer.this.mapScreen.stage.addActor(insufficientFundsWindow);
                 }
             }

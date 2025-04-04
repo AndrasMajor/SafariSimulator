@@ -30,6 +30,8 @@ public class Map {
     public String savingFileName;
     public String level;
     private ScheduledExecutorService scheduler;
+    public int grassPrice = 30;
+    public int waterPrice = 30;
 
     // CONSTRUCTORS -----------------------
     public Map() {
@@ -163,6 +165,7 @@ public class Map {
         for (Tile tile : tiles) {
             if (tile.getPos().getX() == x && tile.getPos().getY() == y) {
                 tile.setHealth(-1);
+                this.money -= this.waterPrice;
                 break;
             }
         }
@@ -172,6 +175,7 @@ public class Map {
         for (Tile tile : tiles) {
             if (tile.getPos().getX() == x && tile.getPos().getY() == y) {
                 tile.setHealth(100);
+                this.money -= this.grassPrice;
                 break;
             }
         }
@@ -204,6 +208,7 @@ public class Map {
         for (int i = 0; i < bushCount; i++) {
             int index = random.nextInt(grassTiles.size());
             Tile selectedTile = grassTiles.remove(index);
+            selectedTile.setHealth(selectedTile.getHealth() + 50);
             objects.add(new Plant(selectedTile.getPos(), PlantType.Bush));
         }
 
@@ -211,6 +216,7 @@ public class Map {
             if (grassTiles.isEmpty()) break;
             int index = random.nextInt(grassTiles.size());
             Tile selectedTile = grassTiles.remove(index);
+            selectedTile.setHealth(selectedTile.getHealth() + 100);
             objects.add(new Plant(selectedTile.getPos(), PlantType.Tree));
         }
     }
