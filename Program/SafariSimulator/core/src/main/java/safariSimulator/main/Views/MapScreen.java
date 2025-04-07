@@ -21,6 +21,8 @@ import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
+
 
 import safariSimulator.main.Models.Entity.Animal.Carnivore.Hyena;
 import safariSimulator.main.Models.Entity.Animal.Carnivore.Lion;
@@ -30,17 +32,17 @@ import safariSimulator.main.Models.Entity.Entity;
 import safariSimulator.main.Models.Entity.Human.Poacher;
 import safariSimulator.main.Models.Entity.Jeep;
 import safariSimulator.main.Models.Map;
-import safariSimulator.main.Models.Objects.Plant;
-import safariSimulator.main.Models.Objects.PlantType;
-import safariSimulator.main.Models.Objects.Road;
+import safariSimulator.main.Models.Objects.*;
+import safariSimulator.main.Models.Objects.Object;
 import safariSimulator.main.Models.Tile.Tile;
 import safariSimulator.main.Models.Point;
-import safariSimulator.main.Models.Objects.Object;
+import safariSimulator.main.Models.Objects.RoadBuildType;
 
 public class MapScreen extends InputAdapter implements Screen {
 
     public PlantType selectedPlantType = null;
     public int selectedTileType = 0;
+    public RoadBuildType selectedRoadType = null;
 
     private BitmapFont font;
 
@@ -57,6 +59,13 @@ public class MapScreen extends InputAdapter implements Screen {
     private Texture bushTexture;
     private Texture roadTexture;
     private Texture poacherTexture;
+    private Texture entranceRoadTexture;
+    private Texture exitRoadTexture;
+    private Texture pixelTexture;
+    private Texture roadStraightNS, roadStraightWE;
+    private Texture roadTurnNE, roadTurnNW, roadTurnSE, roadTurnSW;
+    private RoadBuildType currentRoadType = RoadBuildType.STRAIGHT_NS;
+
 
     public Map map;
 
@@ -67,13 +76,13 @@ public class MapScreen extends InputAdapter implements Screen {
     public Stage stage;
     public TextButton shopButton;
     public TextButton exitButton;
+    public TextButton roadModeToggle;
     public Label moneyLabel;
     private Skin skin;
     public ShopContainer shopContainer;
     public SaveContainer saveContainer;
     private Minimap minimap;
 
-    private ShaderProgram tileShader;
     private TextButton pauseButton;
     private TextButton speedButton;
     private Label dateLabel;
@@ -84,6 +93,7 @@ public class MapScreen extends InputAdapter implements Screen {
         map = new Map(level);
         map.generateMap();
         map.generatePlants();
+        map.placeEntranceAndExit();
         shopContainer = new ShopContainer(new Skin(Gdx.files.internal("uiskin.json")), this);
         saveContainer = new SaveContainer(new Skin(Gdx.files.internal("uiskin.json")), this);
     }
@@ -112,17 +122,32 @@ public class MapScreen extends InputAdapter implements Screen {
 
         treeTexture = new Texture(Gdx.files.internal("objects/tree.png"));
         bushTexture = new Texture(Gdx.files.internal("objects/bush.png"));
-        roadTexture = new Texture(Gdx.files.internal("objects/road.png"));
+        entranceRoadTexture = new Texture(Gdx.files.internal("objects/entrance_road_32.png"));
+        exitRoadTexture = new Texture(Gdx.files.internal("objects/exit_road_32.png"));
+        roadStraightNS = new Texture(Gdx.files.internal("objects/road_straight_south_north.png"));
+        roadStraightWE = new Texture(Gdx.files.internal("objects/road_straight_west_east.png"));
+        roadTurnNE = new Texture(Gdx.files.internal("objects/road_turn_north_east.png"));
+        roadTurnNW = new Texture(Gdx.files.internal("objects/road_turn_north_west.png"));
+        roadTurnSE = new Texture(Gdx.files.internal("objects/road_turn_south_east.png"));
+        roadTurnSW = new Texture(Gdx.files.internal("objects/road_turn_south_west.png"));
 
+        entranceRoadTexture.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
+        exitRoadTexture.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
 
-        ShaderProgram.pedantic = false;
-        tileShader = new ShaderProgram(
-            Gdx.files.internal("shaders/tile_blend.vert"),
-            Gdx.files.internal("shaders/tile_blend.frag")
-        );
-        if (!tileShader.isCompiled()) {
-            System.err.println("Shader compile error:\n" + tileShader.getLog());
-        }
+        // First Pixmap for pixelTexture
+        Pixmap redPixel = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+        redPixel.setColor(1, 1, 1, 1); // white pixel
+        redPixel.fill();
+        pixelTexture = new Texture(redPixel);
+        redPixel.dispose();
+
+// Second Pixmap for money label background
+        Pixmap moneyBg = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+        moneyBg.setColor(0, 0, 0, 0.7f);
+        moneyBg.fill();
+        Texture bgTexture = new Texture(moneyBg);
+        moneyBg.dispose();
+
 
         camera = new OrthographicCamera();
         camera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
@@ -164,11 +189,40 @@ public class MapScreen extends InputAdapter implements Screen {
         topBar.setFillParent(true);
         topBar.top();
 
+        roadModeToggle = new TextButton("Build Mode", skin);
+        roadModeToggle.setVisible(false);
+        stage.addActor(roadModeToggle);
+
+        Table roadToggleTable = new Table();
+        roadToggleTable.setFillParent(true);
+        roadToggleTable.top().left();
+        roadToggleTable.add(roadModeToggle).pad(10).width(150).height(50);
+        stage.addActor(roadToggleTable);
+
+        roadModeToggle.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                if (roadModeToggle.getText().toString().equals("Build Mode")) {
+                    roadModeToggle.setText("Sell Mode");
+                } else {
+                    roadModeToggle.setText("Build Mode");
+                }
+            }
+        });
+
+
         pauseButton = new TextButton("⏸", skin);
         pauseButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 if (map.isPaused()) {
+                    if (!map.areEntranceAndExitConnected()) {
+                        Dialog dialog = new Dialog("Warning", skin);
+                        dialog.text("Roads must connect entrance to exit!");
+                        dialog.button("OK");
+                        dialog.show(stage);
+                        return;
+                    }
                     map.resumeGameClock();
                     pauseButton.setText("⏸");
                 } else {
@@ -215,6 +269,8 @@ public class MapScreen extends InputAdapter implements Screen {
         minimap.setPosition(Gdx.graphics.getWidth() - Minimap.SIZE - 10, Gdx.graphics.getHeight() - Minimap.SIZE - 10);
         stage.addActor(minimap);
 
+
+
         // Money label jobb alsó sarokban
         // Egyedi stílus létrehozása
         BitmapFont moneyFont = new BitmapFont();
@@ -226,11 +282,6 @@ public class MapScreen extends InputAdapter implements Screen {
         moneyStyle.fontColor = com.badlogic.gdx.graphics.Color.GOLD;
 
         // Háttér hozzáadása (fekete átlátszatlan)
-        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
-        pixmap.setColor(0, 0, 0, 0.7f);
-        pixmap.fill();
-        Texture bgTexture = new Texture(pixmap);
-        pixmap.dispose();
 
         Drawable background = new TextureRegionDrawable(new TextureRegion(bgTexture));
         moneyStyle.background = background;
@@ -259,10 +310,8 @@ public class MapScreen extends InputAdapter implements Screen {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        batch.setShader(tileShader);
+        // === 1. Draw tiles using shader ===
         batch.begin();
-
-
         for (Tile tile : map.getTiles()) {
             Texture tileTexture;
             int tileType;
@@ -279,32 +328,32 @@ public class MapScreen extends InputAdapter implements Screen {
             }
             int[] neighbors = getNeighborTypes(tile.getPos());
 
-            tileShader.setUniformi("u_tileType", tileType);
-            tileShader.setUniformi("u_neighborTop", neighbors[0]);
-            tileShader.setUniformi("u_neighborRight", neighbors[1]);
-            tileShader.setUniformi("u_neighborBottom", neighbors[2]);
-            tileShader.setUniformi("u_neighborLeft", neighbors[3]);
-
 
             batch.draw(tileTexture, tile.getPos().getX() * 32, tile.getPos().getY() * 32, 32, 32);
         }
 
+        if (map.isPaused() && roadModeToggle.getText().toString().equals("Build Mode")) {
+            Vector3 mousePos = camera.unproject(new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0));
+            int tx = (int)(mousePos.x / 32);
+            int ty = (int)(mousePos.y / 32);
+
+            Texture preview = getRoadTextureFor(currentRoadType);
+            batch.draw(preview, tx * 32, ty * 32, 32, 32);
+        }
+        batch.end();
+
+        // === 2. Reset shader to draw entities and objects ===
+        batch.setShader(null);
+        batch.begin();
+
         for (Entity entity : map.getEntities()) {
             Texture entityTexture = null;
-
-            if (entity instanceof Lion) {
-                entityTexture = lionTexture;
-            } else if (entity instanceof Zebra) {
-                entityTexture = zebraTexture;
-            } else if (entity instanceof Elephant) {
-                entityTexture = elephantTexture;
-            } else if (entity instanceof Hyena) {
-                entityTexture = hyenaTexture;
-            } else if( entity instanceof Jeep){
-                entityTexture = jeepTexture;
-            } else if (entity instanceof Poacher) {
-                entityTexture = poacherTexture;
-            }
+            if (entity instanceof Lion) entityTexture = lionTexture;
+            else if (entity instanceof Zebra) entityTexture = zebraTexture;
+            else if (entity instanceof Elephant) entityTexture = elephantTexture;
+            else if (entity instanceof Hyena) entityTexture = hyenaTexture;
+            else if (entity instanceof Jeep) entityTexture = jeepTexture;
+            else if (entity instanceof Poacher) entityTexture = poacherTexture;
 
             if (entityTexture != null) {
                 Point pos = entity.getPos();
@@ -312,45 +361,51 @@ public class MapScreen extends InputAdapter implements Screen {
             }
         }
 
-        for(Object object : map.getObjects()){
+        for (Object object : map.getObjects()) {
             Texture objectTexture = null;
-            if (object instanceof Plant) {
-                if (((Plant) object).type == PlantType.Tree){
-                    objectTexture = treeTexture;
-                }else{
-                    objectTexture = bushTexture;
-                }
-            }else if(object instanceof Road){
-                objectTexture = roadTexture;
+            Point pos = object.getPos();
+
+            if (object instanceof EntranceExitRoad) {
+                EntranceExitRoad road = (EntranceExitRoad) object;
+                System.out.println((road.isEntrance ? "Entrance" : "Exit") + " at: " + pos.getX() + "," + pos.getY());
+                objectTexture = road.isEntrance ? entranceRoadTexture : exitRoadTexture;
+            } else if (object instanceof Plant) {
+                if (((Plant) object).type == PlantType.Tree) objectTexture = treeTexture;
+                else objectTexture = bushTexture;
+            } else if (object instanceof SellableRoad sr) {
+                objectTexture = getRoadTextureFor(sr.roadType);
             }
 
             if (objectTexture != null) {
-                Point pos = object.getPos();
-                for(Tile tile : map.getTiles()){
-                    if(tile.getPos().getX() == pos.getX() && tile.getPos().getY() == pos.getY()){
-                        if(tile.getHealth() > 0){
-                            batch.draw(objectTexture, pos.getX() * 32, pos.getY() * 32, 32, 32);
-                        }
-                        else{
-                            map.getObjects().remove(object);
+                // 🔥 Always render entrance/exit, even on non-grass
+                if (object instanceof EntranceExitRoad) {
+                    batch.draw(objectTexture, pos.getX() * 32, pos.getY() * 32, 32, 32);
+                } else {
+                    for (Tile tile : map.getTiles()) {
+                        if (tile.getPos().getX() == pos.getX() && tile.getPos().getY() == pos.getY()) {
+                            if (tile.getHealth() != -1) { // ✅ Allow on sand and grass, but NOT water
+                                batch.draw(objectTexture, pos.getX() * 32, pos.getY() * 32, 32, 32);
+                            }
                             break;
                         }
                     }
                 }
-
             }
         }
 
+
         moneyLabel.setText(map.money + "$");
 
-
         batch.end();
-        batch.setShader(null); // 🔥 reset shader so minimap & UI render normally
 
+        // === 3. Draw UI ===
         stage.act(delta);
+        roadModeToggle.setVisible(map.isPaused());
+
         dateLabel.setText(map.getTime().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
         stage.draw();
     }
+
 
     private int[] getNeighborTypes(Point p) {
         int[] types = new int[4];
@@ -380,39 +435,57 @@ public class MapScreen extends InputAdapter implements Screen {
 
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-        if (selectedPlantType != null) {
-            Vector3 worldCoordinates = camera.unproject(new Vector3(screenX, screenY, 0));
-            int tileX = (int) (worldCoordinates.x / 32);
-            int tileY = (int) (worldCoordinates.y / 32);
+        Vector3 worldCoordinates = camera.unproject(new Vector3(screenX, screenY, 0));
+        int tileX = (int) (worldCoordinates.x / 32);
+        int tileY = (int) (worldCoordinates.y / 32);
+        Point pos = new Point(tileX, tileY);
+        Tile clickedTile = map.getTileAt(tileX, tileY);
 
-            Tile clickedTile = map.getTileAt(tileX, tileY);
-            if (clickedTile != null && clickedTile.getHealth() > 0) {
-                map.buyObject(new Plant(new Point(tileX, tileY), selectedPlantType));
-                if(selectedPlantType == PlantType.Tree){
-                    clickedTile.setHealth(clickedTile.getHealth() + 100);
-                } else if (selectedPlantType == PlantType.Bush) {
-                    clickedTile.setHealth(clickedTile.getHealth() + 50);
-                }
-                selectedPlantType = null;
+        if (selectedPlantType != null && clickedTile != null && clickedTile.getHealth() > 0) {
+            map.buyObject(new Plant(pos, selectedPlantType));
+            clickedTile.setHealth(clickedTile.getHealth() + (selectedPlantType == PlantType.Tree ? 100 : 50));
+            selectedPlantType = null;
+            return true;
+        }
+
+        if (selectedTileType != 0 && clickedTile != null) {
+            if (selectedTileType == -1 && clickedTile.getHealth() != -1) {
+                map.buyWater(tileX, tileY);
+                selectedTileType = 0;
+            } else if (selectedTileType == 100 && clickedTile.getHealth() <= 0) {
+                map.buyGrass(tileX, tileY);
+                selectedTileType = 0;
             }
-        }else if(selectedTileType != 0){
-            Vector3 worldCoordinates = camera.unproject(new Vector3(screenX, screenY, 0));
-            int tileX = (int) (worldCoordinates.x / 32);
-            int tileY = (int) (worldCoordinates.y / 32);
+            return true;
+        }
 
-            Tile clickedTile = map.getTileAt(tileX, tileY);
-            if (clickedTile != null) {
-                if(selectedTileType == -1 && clickedTile.getHealth() != -1){
-                    map.buyWater(tileX, tileY);
-                    selectedTileType = 0;
-                }else if(selectedTileType == 100 && clickedTile.getHealth() <= 0){
-                    map.buyGrass(tileX, tileY);
-                    selectedTileType = 0;
+        if (map.isPaused()) {
+            Object obj = map.getObjects().stream().filter(o -> o.getPos().getX() == pos.getX() && o.getPos().getY() == pos.getY()).findFirst().orElse(null);
+
+            if (roadModeToggle.getText().toString().equals("Sell Mode")) {
+                if (obj instanceof SellableRoad road) {
+                    map.sellObject(road);
+                    return true;
                 }
+            } else if (roadModeToggle.getText().toString().equals("Build Mode") && clickedTile != null && clickedTile.getHealth() >= 0) {
+                if (obj instanceof SellableRoad) {
+                    // rotate road
+                    ((SellableRoad) obj).rotateClockwise();
+                } else if (obj instanceof Road) {
+                    // ✅ There's already a road (entrance/exit) — don't place or rotate
+                    return true;
+                } else {
+                    SellableRoad newRoad = new SellableRoad(pos, currentRoadType);
+                    map.buyObject(newRoad);
+                }
+
+                return true;
             }
         }
+
         return super.touchDown(screenX, screenY, pointer, button);
     }
+
 
 
     @Override public void pause() {}
@@ -435,7 +508,6 @@ public class MapScreen extends InputAdapter implements Screen {
         stage.dispose();
         skin.dispose();
         minimap.dispose();
-        tileShader.dispose();
     }
 
     private void handleInput(float delta) {
@@ -443,7 +515,9 @@ public class MapScreen extends InputAdapter implements Screen {
         if (Gdx.input.isKeyPressed(Input.Keys.S)) camera.position.y -= cameraSpeed * delta;
         if (Gdx.input.isKeyPressed(Input.Keys.A)) camera.position.x -= cameraSpeed * delta;
         if (Gdx.input.isKeyPressed(Input.Keys.D)) camera.position.x += cameraSpeed * delta;
-
+        if (Gdx.input.isKeyJustPressed(Input.Keys.R)) {
+            currentRoadType = RoadBuildType.values()[(currentRoadType.ordinal() + 1) % RoadBuildType.values().length];
+        }
         float targetZoom = camera.zoom;
         if (Gdx.input.isKeyPressed(Input.Keys.Q)) targetZoom = Math.min(1f, targetZoom + zoomSpeed);
         if (Gdx.input.isKeyPressed(Input.Keys.E)) targetZoom = Math.max(0.5f, targetZoom - zoomSpeed);
@@ -462,4 +536,16 @@ public class MapScreen extends InputAdapter implements Screen {
         camera.position.x = Math.max(minX, Math.min(camera.position.x, maxX));
         camera.position.y = Math.max(minY, Math.min(camera.position.y, maxY));
     }
+
+    private Texture getRoadTextureFor(RoadBuildType type) {
+        return switch (type) {
+            case STRAIGHT_NS -> roadStraightNS;
+            case STRAIGHT_WE -> roadStraightWE;
+            case TURN_NE -> roadTurnNE;
+            case TURN_NW -> roadTurnNW;
+            case TURN_SE -> roadTurnSE;
+            case TURN_SW -> roadTurnSW;
+        };
+    }
+
 }
