@@ -6,16 +6,17 @@ import safariSimulator.main.Models.Entity.Entity;
 import safariSimulator.main.Models.Entity.Human.Poacher;
 import safariSimulator.main.Models.Entity.Jeep;
 import safariSimulator.main.Models.MapGeneration.MapGenerator;
+import safariSimulator.main.Models.Objects.EntranceExitRoad;
 import safariSimulator.main.Models.Objects.Plant;
 import safariSimulator.main.Models.Objects.PlantType;
 import safariSimulator.main.Models.Tile.Tile;
 import safariSimulator.main.Models.Objects.Object;
 import safariSimulator.main.Models.GameClock;
+import safariSimulator.main.Models.Objects.Road;
+import safariSimulator.main.Models.Objects.RoadDirection;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -38,7 +39,7 @@ public class Map {
         tiles = new ArrayList<>();
         objects = new ArrayList<>();
         entities = new ArrayList<>();
-        money = 1000;
+        money = 1000000;
         level = "default";
         gameClock = new GameClock(LocalDateTime.now());
         initScheduler();
@@ -48,7 +49,7 @@ public class Map {
         tiles = new ArrayList<>();
         objects = new ArrayList<>();
         entities = new ArrayList<>();
-        money = 1000;
+        money = 1000000000;
         this.level = level;
         gameClock = new GameClock(LocalDateTime.now());
         initScheduler();
@@ -77,6 +78,104 @@ public class Map {
             }
         }
     }
+
+    public void placeEntranceAndExit() {
+        Random random = new Random();
+        int maxAttempts = 100;
+
+        for (int attempt = 0; attempt < maxAttempts; attempt++) {
+            int y = random.nextInt(50);  // pick row
+
+            boolean pathClear = true;
+            for (int x = 0; x < 50; x++) {
+                Tile tile = getTileAt(x, y);
+                if (tile == null || tile.getHealth() == -1) {
+                    pathClear = false;
+                    break;
+                }
+
+                for (Object obj : getObjects()) {
+                    if (obj.getPos().equals(tile.getPos()) && obj instanceof Plant) {
+                        pathClear = false;
+                        break;
+                    }
+                }
+
+                if (!pathClear) break;
+            }
+
+            if (pathClear) {
+                // Place entrance on left
+                Point leftPoint = new Point(0, y);
+                objects.add(new EntranceExitRoad(new Point(0, y), true));  // entrance
+
+
+                // Place exit on right
+                Point rightPoint = new Point(49, y);
+                objects.add(new EntranceExitRoad(new Point(49, y), false)); // exit
+
+                System.out.println("Placed entrance at (0, " + y + ")");
+                System.out.println("Placed exit at (49, " + y + ")");
+                return;
+            }
+            System.out.println("couldnt place");
+        }
+
+        System.out.println("Failed to place entrance/exit after " + maxAttempts + " attempts.");
+    }
+
+    public boolean areEntranceAndExitConnected() {
+        Point entrance = null;
+        Point exit = null;
+
+        for (Object obj : objects) {
+            if (obj instanceof EntranceExitRoad road) {
+                if (road.isEntrance) entrance = road.getPos();
+                else exit = road.getPos();
+            }
+        }
+
+        if (entrance == null || exit == null) return false;
+
+        return isConnectedRecursive(entrance, null, exit, new HashSet<>());
+    }
+
+
+    private boolean isConnectedRecursive(Point current, Point previous, Point target, Set<Point> visited) {
+        if (!isWithinBounds(current) || visited.contains(current)) return false;
+        if (current.equals(target)) return true;
+
+        visited.add(current);
+
+        Object currentObj = getObjectAt(current);
+        if (!(currentObj instanceof Road currentRoad)) return false;
+
+        for (RoadDirection dir : currentRoad.direction) {
+            Point next = dir.move(current);
+            if (next.equals(previous)) continue;
+
+            Object nextObj = getObjectAt(next);
+            if (nextObj instanceof Road || (nextObj instanceof EntranceExitRoad && next.equals(target))) {
+                if (isConnectedRecursive(next, current, target, visited)) return true;
+            }
+        }
+
+        return false;
+    }
+
+
+    private boolean isWithinBounds(Point p) {
+        return p.getX() >= 0 && p.getX() < 50 && p.getY() >= 0 && p.getY() < 50;
+    }
+
+    private Object getObjectAt(Point pos) {
+        for (Object obj : objects) {
+            if (obj.getPos().equals(pos)) return obj;
+        }
+        return null;
+    }
+
+
 
     // -------------------------------------
 
