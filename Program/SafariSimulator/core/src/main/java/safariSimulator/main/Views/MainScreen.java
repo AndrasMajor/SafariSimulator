@@ -7,7 +7,6 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
@@ -45,6 +44,11 @@ public class MainScreen implements Screen {
         loadGameContainer = new LoadGameContainer(skin);
         newGameConteiner = new NewGameConteiner(skin);
 
+        // CENTER CONTAINERS
+        centerActor(menuContainer);
+        centerActor(loadGameContainer);
+        centerActor(newGameConteiner);
+
         // LISTENERS
         menuContainer.loadGameButton.addListener(new ClickListener() {
             @Override
@@ -76,10 +80,15 @@ public class MainScreen implements Screen {
             }
         });
 
-
         // ADD MENUCONTAINER TO STAGE
         stage.addActor(menuContainer);
+    }
 
+    private void centerActor(Window actor) {
+        actor.pack();
+        float x = (viewport.getWorldWidth() - actor.getWidth()) / 2f;
+        float y = (viewport.getWorldHeight() - actor.getHeight()) / 2f;
+        actor.setPosition(x, y);
     }
 
     @Override
@@ -100,6 +109,9 @@ public class MainScreen implements Screen {
     @Override
     public void resize(int width, int height) {
         viewport.update(width, height, true);
+        centerActor(menuContainer);
+        centerActor(loadGameContainer);
+        centerActor(newGameConteiner);
     }
 
     @Override

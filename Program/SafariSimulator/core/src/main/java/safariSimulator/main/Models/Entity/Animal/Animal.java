@@ -2,6 +2,7 @@ package safariSimulator.main.Models.Entity.Animal;
 
 import safariSimulator.main.Models.Entity.Animal.Carnivore.Carnivore;
 import safariSimulator.main.Models.Entity.Animal.Herbivore.Herbivore;
+import safariSimulator.main.Models.Entity.Mover;
 import safariSimulator.main.Models.Map;
 import safariSimulator.main.Models.Tile.Tile;
 import safariSimulator.main.Models.Entity.Entity;
@@ -202,6 +203,9 @@ public abstract class Animal extends Entity {
 
 
     public void move(Map map) {
+        if (this.mover != null && !this.mover.isComplete()) {
+            return; // Wait for the animation to finish
+        }
         List<Tile> tiles = map.getTiles();
         List<Entity> entities = map.getEntities();
         Point currentPos = this.getPos();
@@ -302,13 +306,14 @@ public abstract class Animal extends Entity {
         Point current = this.getPos();
         int dx = Integer.compare(target.getX(), current.getX());
         int dy = Integer.compare(target.getY(), current.getY());
-
         Point newPos = new Point(current.getX() + dx, current.getY() + dy);
 
         if (isValidMove(newPos, tiles)) {
-            this.setPos(newPos);
+            this.mover = new Mover(current, newPos, 0.7f); // Move over 0.4 seconds
+            this.setPos(newPos); // Update logical position
         }
     }
+
 
     private boolean isValidMove(Point pos, List<Tile> tiles) {
         for (Tile tile : tiles) {
@@ -425,8 +430,8 @@ public abstract class Animal extends Entity {
     }
 
 
-
-
-
+    public float getScale() {
+        return 0.5f; // default (zebra)
+    }
 
 }

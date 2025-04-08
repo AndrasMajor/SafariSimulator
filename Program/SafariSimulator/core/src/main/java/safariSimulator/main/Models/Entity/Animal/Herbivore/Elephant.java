@@ -22,4 +22,9 @@ public class Elephant extends Herbivore {
         this.price = 100;
     }
     public Elephant() {}
+
+    @Override
+    public float getScale() {
+        return 1.0f;
+    }
 }

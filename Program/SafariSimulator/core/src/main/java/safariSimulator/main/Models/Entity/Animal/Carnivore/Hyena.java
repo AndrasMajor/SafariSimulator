@@ -21,5 +21,10 @@ public class Hyena extends Carnivore {
         this.speed = 10; //Sets the speed of the hyena to 1
         this.price = 50;
     }
+
+    @Override
+    public float getScale() {
+        return 0.4f;
+    }
     public Hyena() {}
 }

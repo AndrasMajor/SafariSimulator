@@ -19,6 +19,12 @@ public abstract class Entity {
 
     public int price;
 
+    public Mover mover;
+
+    public boolean isMoving() {
+        return mover != null && !mover.isComplete();
+    }
+
     /**
      * Constructor that initializes the entity with a given position.
      * @param pos The initial position of the entity.
@@ -37,8 +43,13 @@ public abstract class Entity {
     }
 
     public void setPos(Point pos) {
+        if (this.pos != null && !this.pos.equals(pos)) {
+            // Start movement animation from current to new position
+            this.mover = new Mover(this.pos, pos, 1f); // 0.3 seconds to move
+        }
         this.pos = pos;
     }
+
 
     /**
      * Moves the entity.
