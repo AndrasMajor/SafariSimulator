@@ -24,6 +24,7 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 
 
+import safariSimulator.main.Models.Entity.Animal.Animal;
 import safariSimulator.main.Models.Entity.Animal.Carnivore.Hyena;
 import safariSimulator.main.Models.Entity.Animal.Carnivore.Lion;
 import safariSimulator.main.Models.Entity.Animal.Herbivore.Elephant;
@@ -43,6 +44,7 @@ public class MapScreen extends InputAdapter implements Screen {
     public PlantType selectedPlantType = null;
     public int selectedTileType = 0;
     public RoadBuildType selectedRoadType = null;
+    public final int TILE_SIZE = 64;
 
     private BitmapFont font;
 
@@ -112,10 +114,10 @@ public class MapScreen extends InputAdapter implements Screen {
         sandTexture = new Texture(Gdx.files.internal("map_tile_images/sand.png"));
         grassTexture = new Texture(Gdx.files.internal("map_tile_images/grass.png"));
 
-        lionTexture = new Texture(Gdx.files.internal("entities/lion.png"));
-        hyenaTexture = new Texture(Gdx.files.internal("entities/hyena.png"));
-        elephantTexture = new Texture(Gdx.files.internal("entities/elephant.png"));
-        zebraTexture = new Texture(Gdx.files.internal("entities/zebra.png"));
+        lionTexture = new Texture(Gdx.files.internal("entities/lion_top.png"));
+        hyenaTexture = new Texture(Gdx.files.internal("entities/hyena_top.png"));
+        elephantTexture = new Texture(Gdx.files.internal("entities/elephant_top.png"));
+        zebraTexture = new Texture(Gdx.files.internal("entities/zebra_top.png"));
 
         poacherTexture = new Texture(Gdx.files.internal("entities/poacher.png"));
         jeepTexture = new Texture(Gdx.files.internal("entities/jeep.png"));
@@ -329,37 +331,65 @@ public class MapScreen extends InputAdapter implements Screen {
             int[] neighbors = getNeighborTypes(tile.getPos());
 
 
-            batch.draw(tileTexture, tile.getPos().getX() * 32, tile.getPos().getY() * 32, 32, 32);
+            batch.draw(tileTexture, tile.getPos().getX() * TILE_SIZE, tile.getPos().getY() * TILE_SIZE, TILE_SIZE, TILE_SIZE);
         }
 
         if (map.isPaused() && roadModeToggle.getText().toString().equals("Build Mode")) {
             Vector3 mousePos = camera.unproject(new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0));
-            int tx = (int)(mousePos.x / 32);
-            int ty = (int)(mousePos.y / 32);
+            int tx = (int)(mousePos.x / TILE_SIZE);
+            int ty = (int)(mousePos.y / TILE_SIZE);
 
             Texture preview = getRoadTextureFor(currentRoadType);
-            batch.draw(preview, tx * 32, ty * 32, 32, 32);
+            batch.draw(preview, tx * TILE_SIZE, ty * TILE_SIZE, TILE_SIZE, TILE_SIZE);
         }
         batch.end();
 
         // === 2. Reset shader to draw entities and objects ===
+        // === 2. Reset shader to draw entities and objects ===
         batch.setShader(null);
         batch.begin();
 
+// === Updated animal/entity rendering with rotation and scaling ===
         for (Entity entity : map.getEntities()) {
-            Texture entityTexture = null;
-            if (entity instanceof Lion) entityTexture = lionTexture;
-            else if (entity instanceof Zebra) entityTexture = zebraTexture;
-            else if (entity instanceof Elephant) entityTexture = elephantTexture;
-            else if (entity instanceof Hyena) entityTexture = hyenaTexture;
-            else if (entity instanceof Jeep) entityTexture = jeepTexture;
-            else if (entity instanceof Poacher) entityTexture = poacherTexture;
+            if (entity instanceof Animal animal && animal.isAlive()) {
+                if (animal.mover != null && !animal.mover.isComplete()) {
+                    animal.mover.update(delta);
+                }
 
-            if (entityTexture != null) {
-                Point pos = entity.getPos();
-                batch.draw(entityTexture, pos.getX() * 32, pos.getY() * 32, 32, 32);
+                float x = (animal.mover != null) ? animal.mover.getInterpolatedX() : animal.getPos().getX();
+                float y = (animal.mover != null) ? animal.mover.getInterpolatedY() : animal.getPos().getY();
+                float drawX = x * TILE_SIZE;
+                float drawY = y * TILE_SIZE;
+
+                float scale = animal.getScale();
+                float scaledSize = TILE_SIZE * scale;
+
+                float rotation = 90f; // Default north
+                if (animal.mover != null && !animal.mover.isComplete()) {
+                    rotation = animal.mover.getAngleDeg() - 90f; // FIXED: adjust so north=default
+                }
+
+                Texture texture = getTextureFor(animal);
+
+                batch.draw(
+                    texture,
+                    drawX + 16 - scaledSize / 2f,
+                    drawY + 16 - scaledSize / 2f,
+                    scaledSize / 2f, scaledSize / 2f,
+                    scaledSize, scaledSize,
+                    1f, 1f,
+                    rotation,
+                    0, 0,
+                    texture.getWidth(), texture.getHeight(),
+                    false, false
+                );
+            } else {
+                float drawX = entity.getPos().getX() * TILE_SIZE;
+                float drawY = entity.getPos().getY() * TILE_SIZE;
+                batch.draw(getTextureFor(entity), drawX, drawY, TILE_SIZE, TILE_SIZE);
             }
         }
+
 
         for (Object object : map.getObjects()) {
             Texture objectTexture = null;
@@ -379,12 +409,12 @@ public class MapScreen extends InputAdapter implements Screen {
             if (objectTexture != null) {
                 // 🔥 Always render entrance/exit, even on non-grass
                 if (object instanceof EntranceExitRoad) {
-                    batch.draw(objectTexture, pos.getX() * 32, pos.getY() * 32, 32, 32);
+                    batch.draw(objectTexture, pos.getX() * TILE_SIZE, pos.getY() * TILE_SIZE, TILE_SIZE, TILE_SIZE);
                 } else {
                     for (Tile tile : map.getTiles()) {
                         if (tile.getPos().getX() == pos.getX() && tile.getPos().getY() == pos.getY()) {
                             if (tile.getHealth() != -1) { // ✅ Allow on sand and grass, but NOT water
-                                batch.draw(objectTexture, pos.getX() * 32, pos.getY() * 32, 32, 32);
+                                batch.draw(objectTexture, pos.getX() * TILE_SIZE, pos.getY() * TILE_SIZE, TILE_SIZE, TILE_SIZE);
                             }
                             break;
                         }
@@ -406,6 +436,15 @@ public class MapScreen extends InputAdapter implements Screen {
         stage.draw();
     }
 
+    private Texture getTextureFor(Entity entity) {
+        if (entity instanceof Lion) return lionTexture;
+        if (entity instanceof Hyena) return hyenaTexture;
+        if (entity instanceof Elephant) return elephantTexture;
+        if (entity instanceof Zebra) return zebraTexture;
+        if (entity instanceof Poacher) return poacherTexture;
+        if (entity instanceof Jeep) return jeepTexture;
+        return null; // Unknown entity type
+    }
 
     private int[] getNeighborTypes(Point p) {
         int[] types = new int[4];
@@ -436,8 +475,8 @@ public class MapScreen extends InputAdapter implements Screen {
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
         Vector3 worldCoordinates = camera.unproject(new Vector3(screenX, screenY, 0));
-        int tileX = (int) (worldCoordinates.x / 32);
-        int tileY = (int) (worldCoordinates.y / 32);
+        int tileX = (int) (worldCoordinates.x / TILE_SIZE);
+        int tileY = (int) (worldCoordinates.y / TILE_SIZE);
         Point pos = new Point(tileX, tileY);
         Tile clickedTile = map.getTileAt(tileX, tileY);
 
@@ -529,9 +568,9 @@ public class MapScreen extends InputAdapter implements Screen {
         float halfHeight = camera.viewportHeight * camera.zoom / 2;
 
         float minX = halfWidth;
-        float maxX = 50 * 32 - halfWidth;
+        float maxX = 50 * TILE_SIZE - halfWidth;
         float minY = halfHeight;
-        float maxY = 50 * 32 - halfHeight;
+        float maxY = 50 * TILE_SIZE - halfHeight;
 
         camera.position.x = Math.max(minX, Math.min(camera.position.x, maxX));
         camera.position.y = Math.max(minY, Math.min(camera.position.y, maxY));

@@ -1,3 +1,5 @@
+// Updated Minimap.java to respect TILE_SIZE = 64 instead of hardcoded 32 for accurate camera box scaling
+
 package safariSimulator.main.Views;
 
 import com.badlogic.gdx.graphics.Color;
@@ -13,6 +15,7 @@ import safariSimulator.main.Models.Tile.Tile;
 
 public class Minimap extends Actor {
     public static final int SIZE = 200;
+    public static final int TILE_SIZE = 64;
 
     private final OrthographicCamera camera;
     private final Map map;
@@ -68,34 +71,33 @@ public class Minimap extends Actor {
         batch.draw(minimapTexture, getX(), getY(), getWidth(), getHeight());
 
         if (camera != null) {
-            float mapWidth = map.getWidth() * 32f;
-            float mapHeight = map.getHeight() * 32f;
+            float mapWidth = map.getWidth();
+            float mapHeight = map.getHeight();
 
-            float camLeft = camera.position.x - camera.viewportWidth * 0.5f * camera.zoom;
-            float camBottom = camera.position.y - camera.viewportHeight * 0.5f * camera.zoom;
-            float camWidth = camera.viewportWidth * camera.zoom;
-            float camHeight = camera.viewportHeight * camera.zoom;
+            float tileToPixel = getWidth() / mapWidth;
 
-            float normX = camLeft / mapWidth;
-            float normY = camBottom / mapHeight;
-            float normW = camWidth / mapWidth;
-            float normH = camHeight / mapHeight;
+            float camTileWidth = camera.viewportWidth * camera.zoom / TILE_SIZE;
+            float camTileHeight = camera.viewportHeight * camera.zoom / TILE_SIZE;
 
-            float rectX = getX() + normX * getWidth();
-            float rectY = getY() + normY * getHeight();
-            float rectW = normW * getWidth();
-            float rectH = normH * getHeight();
+            float camTileX = camera.position.x / TILE_SIZE;
+            float camTileY = camera.position.y / TILE_SIZE;
+
+            float rectWidth = camTileWidth * tileToPixel;
+            float rectHeight = camTileHeight * tileToPixel;
+
+            float rectX = getX() + camTileX * tileToPixel - rectWidth / 2f;
+            float rectY = getY() + camTileY * tileToPixel - rectHeight / 2f;
 
             batch.setColor(new Color(0.5f, 0.25f, 0f, 1f)); // Brown frame
 
             // Top
-            batch.draw(minimapTexture, rectX, rectY + rectH - 1, rectW, 1);
+            batch.draw(minimapTexture, rectX, rectY + rectHeight - 1, rectWidth, 1);
             // Bottom
-            batch.draw(minimapTexture, rectX, rectY, rectW, 1);
+            batch.draw(minimapTexture, rectX, rectY, rectWidth, 1);
             // Left
-            batch.draw(minimapTexture, rectX, rectY, 1, rectH);
+            batch.draw(minimapTexture, rectX, rectY, 1, rectHeight);
             // Right
-            batch.draw(minimapTexture, rectX + rectW - 1, rectY, 1, rectH);
+            batch.draw(minimapTexture, rectX + rectWidth - 1, rectY, 1, rectHeight);
         }
     }
 
@@ -105,19 +107,14 @@ public class Minimap extends Actor {
 
         float tileSize = (float) SIZE / mapWidth;
 
-        // Convert click to tile coordinates
         int tileX = (int)(x / tileSize);
         int tileY = (int)(y / tileSize);
 
-        // Flip Y to match renderMinimap()
+        float targetX = tileX * TILE_SIZE + TILE_SIZE / 2f;
+        float targetY = tileY * TILE_SIZE + TILE_SIZE / 2f;
 
-        // Convert tile to world position (center of tile)
-        float targetX = tileX * 32f + 16f;
-        float targetY = tileY * 32f + 16f;
-
-        // Clamp camera to avoid out-of-bounds scrolling
-        float mapPixelWidth = mapWidth * 32f;
-        float mapPixelHeight = mapHeight * 32f;
+        float mapPixelWidth = mapWidth * TILE_SIZE;
+        float mapPixelHeight = mapHeight * TILE_SIZE;
 
         float halfViewWidth = camera.viewportWidth * camera.zoom * 0.5f;
         float halfViewHeight = camera.viewportHeight * camera.zoom * 0.5f;
@@ -130,7 +127,7 @@ public class Minimap extends Actor {
         float clampedX = Math.max(minX, Math.min(targetX, maxX));
         float clampedY = Math.max(minY, Math.min(targetY, maxY));
 
-        camera.position.set(clampedX, (clampedY), 0);
+        camera.position.set(clampedX, clampedY, 0);
         camera.update();
     }
 
