@@ -6,22 +6,26 @@ before_script:
 
 build:
   stage: build
-  script: gradle --build-cache assemble
+  script:
+    - cd Program/SafariSimulator
+    - gradle --build-cache assemble
   cache:
     key: "$CI_COMMIT_REF_NAME"
     policy: push
     paths:
-      - build
+      - Program/SafariSimulator/build
       - .gradle
 
 test:
   stage: test
-  script: gradle check
+  script:
+    - cd Program/SafariSimulator
+    - gradle check
   cache:
     key: "$CI_COMMIT_REF_NAME"
     policy: pull
     paths:
-      - build
+      - Program/SafariSimulator/build
       - .gradle
 
 deploy:
