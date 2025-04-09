@@ -1,6 +1,10 @@
 package safariSimulator.main.Models.Entity;
 
 import safariSimulator.main.Models.Point;
+import safariSimulator.main.Models.Tile.Tile;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Represents an abstract entity in the safari simulator.
@@ -48,6 +52,17 @@ public abstract class Entity {
             this.mover = new Mover(this.pos, pos, 1f); // 0.3 seconds to move
         }
         this.pos = pos;
+    }
+
+    protected List<Tile> getNearbyTiles(Point pos, List<Tile> tiles) {
+        List<Tile> nearby = new ArrayList<>();
+        for (Tile tile : tiles) {
+            if (Math.abs(tile.getPos().getX() - pos.getX()) <= 3 &&
+                Math.abs(tile.getPos().getY() - pos.getY()) <= 3) {
+                nearby.add(tile);
+            }
+        }
+        return nearby;
     }
 
 

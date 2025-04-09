@@ -348,16 +348,6 @@ public abstract class Animal extends Entity {
     }
 
 
-    private List<Tile> getNearbyTiles(Point pos, List<Tile> tiles) {
-        List<Tile> nearby = new ArrayList<>();
-        for (Tile tile : tiles) {
-            if (Math.abs(tile.getPos().getX() - pos.getX()) <= 3 &&
-                Math.abs(tile.getPos().getY() - pos.getY()) <= 3) {
-                nearby.add(tile);
-            }
-        }
-        return nearby;
-    }
 
     private boolean isInRange(Point p1, Point p2) {
         return Math.abs(p1.getX() - p2.getX()) <= 2 && Math.abs(p1.getY() - p2.getY()) <= 2;
