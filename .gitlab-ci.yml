@@ -1,0 +1,35 @@
+image: gradle:alpine
+
+before_script:
+  - GRADLE_USER_HOME="$(pwd)/.gradle"
+  - export GRADLE_USER_HOME
+
+build:
+  stage: build
+  script:
+    - cd Program/SafariSimulator
+    - gradle --build-cache assemble
+  cache:
+    key: "$CI_COMMIT_REF_NAME"
+    policy: push
+    paths:
+      - Program/SafariSimulator/build
+      - .gradle
+
+test:
+  stage: test
+  script:
+    - cd Program/SafariSimulator
+    - gradle check
+  cache:
+    key: "$CI_COMMIT_REF_NAME"
+    policy: pull
+    paths:
+      - Program/SafariSimulator/build
+      - .gradle
+
+deploy:
+  stage: deploy
+  script: echo "Define your deployment script!"
+  environment: production
+
