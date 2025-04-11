@@ -350,7 +350,7 @@ public class MapScreen extends InputAdapter implements Screen {
         batch.begin();
 
 // === Updated animal/entity rendering with rotation and scaling ===
-        for (Entity entity : map.getEntities()) {
+        /*for (Entity entity : map.getEntities()) {
             if (entity instanceof Animal animal && animal.isAlive()) {
                 if (animal.mover != null && !animal.mover.isComplete()) {
                     animal.mover.update(delta);
@@ -388,7 +388,48 @@ public class MapScreen extends InputAdapter implements Screen {
                 float drawY = entity.getPos().getY() * TILE_SIZE;
                 batch.draw(getTextureFor(entity), drawX, drawY, TILE_SIZE, TILE_SIZE);
             }
+        }*/
+
+        for (Entity entity : map.getEntities()) {
+            // Frissítjük a mozgást, ha van
+            if (entity.mover != null && !entity.mover.isComplete()) {
+                entity.mover.update(delta);
+            }
+
+            // Pozíció meghatározása
+            float x = (entity.mover != null) ? entity.mover.getInterpolatedX() : entity.getPos().getX();
+            float y = (entity.mover != null) ? entity.mover.getInterpolatedY() : entity.getPos().getY();
+            float drawX = x * TILE_SIZE;
+            float drawY = y * TILE_SIZE;
+
+            // Skálázás és forgatás
+            float scale = entity.getScale();
+            float scaledSize = TILE_SIZE * scale;
+            float rotation = (entity.mover != null && !entity.mover.isComplete())
+                ? entity.mover.getAngleDeg() - 90f
+                : 0f;
+
+            Texture texture = getTextureFor(entity);
+
+            // Rajzolás
+            if (scale != 1f || rotation != 0f) {
+                batch.draw(
+                    texture,
+                    drawX + 16 - scaledSize / 2f,
+                    drawY + 16 - scaledSize / 2f,
+                    scaledSize / 2f, scaledSize / 2f,
+                    scaledSize, scaledSize,
+                    1f, 1f,
+                    rotation,
+                    0, 0,
+                    texture.getWidth(), texture.getHeight(),
+                    false, false
+                );
+            } else {
+                batch.draw(texture, drawX, drawY, TILE_SIZE, TILE_SIZE);
+            }
         }
+
 
 
         for (Object object : map.getObjects()) {
@@ -397,7 +438,7 @@ public class MapScreen extends InputAdapter implements Screen {
 
             if (object instanceof EntranceExitRoad) {
                 EntranceExitRoad road = (EntranceExitRoad) object;
-                System.out.println((road.isEntrance ? "Entrance" : "Exit") + " at: " + pos.getX() + "," + pos.getY());
+                //System.out.println((road.isEntrance ? "Entrance" : "Exit") + " at: " + pos.getX() + "," + pos.getY());
                 objectTexture = road.isEntrance ? entranceRoadTexture : exitRoadTexture;
             } else if (object instanceof Plant) {
                 if (((Plant) object).type == PlantType.Tree) objectTexture = treeTexture;

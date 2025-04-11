@@ -66,11 +66,8 @@ public abstract class Entity {
     }
 
 
-    /**
-     * Moves the entity.
-     */
-    public void move() {
-        // TODO: Implement movement logic in subclasses
+    public float getScale() {
+        return 0.5f; // default (zebra)
     }
 }
 

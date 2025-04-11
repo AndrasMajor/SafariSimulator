@@ -8,9 +8,7 @@ import safariSimulator.main.Models.Tile.Tile;
 import safariSimulator.main.Models.Entity.Entity;
 import safariSimulator.main.Models.Point;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 /**
  * Represents an abstract Animal in the safari simulator.
@@ -50,7 +48,7 @@ public abstract class Animal extends Entity {
     public Animal(Point pos) {
         super(pos);
         this.age = 0;
-        this.health = 100;  // Default full health
+        this.health = 500;  // Default full health
         this.foodLevel = 100;  // Default full food level
         this.waterLevel = 100;  // Default full water level
         this.leader = null;
@@ -264,20 +262,23 @@ public abstract class Animal extends Entity {
         }
 
         if (targetTile != null) {
-            moveStepTowards(targetTile.getPos(), tiles);
+            moveTowardsWithPathfinding(targetTile.getPos(), tiles);
             if (waterLevel < 50 && isNextToWater(currentTile, tiles)) {
                 drink();
+                System.out.println("Slurp");
                 waterMemory.add(currentTile);
             }
             if(this.isHerbivore() && foodLevel < 50  && currentTile.getHealth() > 0) {
                 ((Herbivore) this).graze();
+                System.out.println("Yumm Grass!");
                 grassMemory.add(currentTile);
                 currentTile.setHealth(currentTile.getHealth() - 20);
             }
         } else if (targetEntity != null) {
-            moveStepTowards(targetEntity.getPos(), tiles);
+            moveTowardsWithPathfinding(targetEntity.getPos(), tiles);
             if(this.getPos().getX() == targetEntity.getPos().getX()
                 && this.getPos().getY() == targetEntity.getPos().getY()) {
+                System.out.println("Yumm Zebra/Elephant!");
                 ((Carnivore) this).hunt(targetEntity);
             }
         } else {
@@ -291,6 +292,30 @@ public abstract class Animal extends Entity {
         decreaseWaterLevel(1);
         ageUp();
     }
+
+    public List<Tile> getNearbyTiles(Point currentPos, List<Tile> tiles) {
+        List<Tile> nearbyTiles = new ArrayList<>();
+
+        int centerX = currentPos.getX();
+        int centerY = currentPos.getY();
+        // 7*7 square
+        for (int dx = -3; dx <= 3; dx++) {
+            for (int dy = -3; dy <= 3; dy++) {
+                int nx = centerX + dx;
+                int ny = centerY + dy;
+
+                for (Tile tile : tiles) {
+                    if (tile.getPos().getX() == nx && tile.getPos().getY() == ny) {
+                        nearbyTiles.add(tile);
+                        break;
+                    }
+                }
+            }
+        }
+
+        return nearbyTiles;
+    }
+
 
     public Tile getCurrentTile(List<Tile> tiles) {
         for (Tile tile : tiles) {
@@ -350,12 +375,9 @@ public abstract class Animal extends Entity {
 
 
     private boolean isInRange(Point p1, Point p2) {
-        return Math.abs(p1.getX() - p2.getX()) <= 2 && Math.abs(p1.getY() - p2.getY()) <= 2;
+        return Math.abs(p1.getX() - p2.getX()) <= 10 && Math.abs(p1.getY() - p2.getY()) <= 10;
     }
 
-    private void moveTo(Point target) {
-        this.setPos(target);
-    }
 
     private void moveRandomly(List<Tile> tiles) {
         Random rand = new Random();
@@ -365,7 +387,7 @@ public abstract class Animal extends Entity {
             int dy = rand.nextInt(3) - 1;
             newPos = new Point(this.getPos().getX() + dx, this.getPos().getY() + dy);
         } while (!isValidMove(newPos, tiles));
-        this.setPos(newPos);
+        moveStepTowards(newPos, tiles);
     }
 
 
@@ -394,10 +416,10 @@ public abstract class Animal extends Entity {
         double bestDistance = Double.MAX_VALUE;
 
         for (Tile tile : nearbyTiles) {
-            if (tile.getHealth() == -1) continue; // Vízen nem mozoghatunk
+            if (tile.getHealth() == -1) continue;
             boolean occupied = false;
 
-            // Ellenőrizzük, hogy van-e más entitás a mezőn
+
             for (Entity entity : entities) {
                 if (entity.getPos().equals(tile.getPos())) {
                     occupied = true;
@@ -423,5 +445,92 @@ public abstract class Animal extends Entity {
     public float getScale() {
         return 0.5f; // default (zebra)
     }
+
+
+    /*Ideal path algorithm*/
+    private List<Point> findPath(Point start, Point goal, List<Tile> tiles) {
+        Set<Point> closedSet = new HashSet<>();
+        PriorityQueue<Node> openSet = new PriorityQueue<>(Comparator.comparingDouble(n -> n.fScore));
+        java.util.Map<Point, Point> cameFrom = new HashMap<>();
+        java.util.Map<Point, Double> gScore = new HashMap<>();
+
+        gScore.put(start, 0.0);
+        openSet.add(new Node(start, heuristic(start, goal)));
+
+        while (!openSet.isEmpty()) {
+            Node current = openSet.poll();
+
+            if (current.point.equals(goal)) {
+                return reconstructPath(cameFrom, current.point);
+            }
+
+            closedSet.add(current.point);
+
+            for (Point neighbor : getWalkableNeighbors(current.point, tiles)) {
+                if (closedSet.contains(neighbor)) continue;
+
+                double tentativeG = gScore.getOrDefault(current.point, Double.POSITIVE_INFINITY) + 1;
+
+                if (tentativeG < gScore.getOrDefault(neighbor, Double.POSITIVE_INFINITY)) {
+                    cameFrom.put(neighbor, current.point);
+                    gScore.put(neighbor, tentativeG);
+                    double fScore = tentativeG + heuristic(neighbor, goal);
+                    openSet.add(new Node(neighbor, fScore));
+                }
+            }
+        }
+
+        return new ArrayList<>();
+    }
+
+    private List<Point> reconstructPath(java.util.Map<Point, Point> cameFrom, Point current) {
+        List<Point> path = new ArrayList<>();
+        while (cameFrom.containsKey(current)) {
+            path.add(current);
+            current = cameFrom.get(current);
+        }
+        Collections.reverse(path);
+        return path;
+    }
+
+    private double heuristic(Point a, Point b) {
+        return Math.abs(a.getX() - b.getX()) + Math.abs(a.getY() - b.getY()); // Manhattan-távolság
+    }
+
+    private List<Point> getWalkableNeighbors(Point current, List<Tile> tiles) {
+        int[] dx = {-1, 1, 0, 0};
+        int[] dy = {0, 0, -1, 1};
+        List<Point> neighbors = new ArrayList<>();
+
+        for (int i = 0; i < 4; i++) {
+            Point next = new Point(current.getX() + dx[i], current.getY() + dy[i]);
+            if (isValidMove(next, tiles)) {
+                neighbors.add(next);
+            }
+        }
+
+        return neighbors;
+    }
+
+    public static class Node {
+        Point point;
+        double fScore;
+
+        Node(Point point, double fScore) {
+            this.point = point;
+            this.fScore = fScore;
+        }
+    }
+
+    private void moveTowardsWithPathfinding(Point target, List<Tile> tiles) {
+        List<Point> path = findPath(this.getPos(), target, tiles);
+        if (!path.isEmpty()) {
+            Point nextStep = path.get(0);
+            this.mover = new Mover(this.getPos(), nextStep, 0.7f);
+            this.setPos(nextStep);
+        }
+    }
+
+
 
 }
