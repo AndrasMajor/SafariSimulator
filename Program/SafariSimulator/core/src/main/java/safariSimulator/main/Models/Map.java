@@ -127,8 +127,6 @@ public class Map {
                 Point rightPoint = new Point(49, y);
                 objects.add(new EntranceExitRoad(new Point(49, y), false)); // exit
 
-                System.out.println("Placed entrance at (0, " + y + ")");
-                System.out.println("Placed exit at (49, " + y + ")");
                 return;
             }
             System.out.println("couldnt place");
@@ -368,9 +366,6 @@ public class Map {
                 if (entity instanceof Animal) {
                     setLeader();
                     ((Animal) entity).move(this);
-                    System.out.println(((Animal) entity).getLeader());
-                    System.out.println(((Animal) entity).getWaterLevel());
-                    System.out.println(((Animal) entity).getFoodLevel());
                     if ( !((Animal) entity).isAlive()) {
                         entities.remove(entity);
                         break; // Exit the loop to avoid ConcurrentModificationException
