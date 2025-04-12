@@ -12,6 +12,7 @@ import safariSimulator.main.Models.Entity.Animal.Carnivore.Hyena;
 import safariSimulator.main.Models.Entity.Animal.Carnivore.Lion;
 import safariSimulator.main.Models.Entity.Animal.Herbivore.Elephant;
 import safariSimulator.main.Models.Entity.Animal.Herbivore.Zebra;
+import safariSimulator.main.Models.Entity.Human.Keeper;
 import safariSimulator.main.Models.Entity.Jeep;
 import safariSimulator.main.Models.Objects.Plant;
 import safariSimulator.main.Models.Objects.PlantType;
@@ -25,6 +26,7 @@ public class ShopContainer extends Window {
     public TextButton elephantButton;
     public TextButton roadButton;
     public TextButton jeepButton;
+    public TextButton keeperButton;
     public TextButton grassButton;
     public TextButton treeButton;
     public TextButton bushButton;
@@ -63,6 +65,7 @@ public class ShopContainer extends Window {
         elephantButton = new TextButton("Elephant", skin);
         roadButton = new TextButton("Road", skin);
         jeepButton = new TextButton("Jeep", skin);
+        keeperButton = new TextButton("Keeper", skin);
         grassButton = new TextButton("Grass", skin);
         treeButton = new TextButton("Tree", skin);
         bushButton = new TextButton("Bush", skin);
@@ -75,6 +78,7 @@ public class ShopContainer extends Window {
         Label elephantPrice = new Label("100$", skin);
         Label roadPrice = new Label("80$", skin);
         Label jeepPrice = new Label("50$", skin);
+        Label keeperPrice = new Label("100$/day", skin);
         Label grassPrice = new Label("30$", skin);
         Label treePrice = new Label("40$", skin);
         Label bushPrice = new Label("30$", skin);
@@ -125,6 +129,7 @@ public class ShopContainer extends Window {
         // Vehicles and roads row
         table.add(roadButton).pad(10);
         table.add(jeepButton).pad(10);
+        table.add(keeperButton).pad(10);
         table.add(waterButton).pad(10);
         table.add().pad(5); // Empty for spacing
 
@@ -132,6 +137,7 @@ public class ShopContainer extends Window {
 
         table.add(roadPrice).padTop(5).padBottom(5).center();
         table.add(jeepPrice).padTop(5).padBottom(5).center();
+        table.add(keeperPrice).padTop(5).padBottom(5).center();
         table.add(waterPrice).padTop(5).padBottom(5).center();
         table.add().pad(5); // Empty for spacing
         table.row();
@@ -141,7 +147,7 @@ public class ShopContainer extends Window {
 
         for (TextButton button : new TextButton[]{
             lionButton, hyenaButton, zebraButton, elephantButton,
-            roadButton, jeepButton, grassButton, treeButton,
+            roadButton, jeepButton, keeperButton, grassButton, treeButton,
             bushButton, waterButton, closeButton}) {
             button.getLabel().setFontScale(1.3f);
             button.pad(15);
@@ -196,6 +202,15 @@ public class ShopContainer extends Window {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 if(ShopContainer.this.mapScreen.map.buyEntity(new Jeep(new Point())) == 1){
+                }else{
+                    ShopContainer.this.mapScreen.stage.addActor(insufficientFundsWindow);
+                }
+            }
+        });
+        keeperButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                if(ShopContainer.this.mapScreen.map.buyEntity(new Keeper(new Point())) == 1){
                 }else{
                     ShopContainer.this.mapScreen.stage.addActor(insufficientFundsWindow);
                 }
