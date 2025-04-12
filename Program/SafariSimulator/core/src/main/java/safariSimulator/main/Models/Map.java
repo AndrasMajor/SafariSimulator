@@ -47,6 +47,8 @@ public class Map {
     private int touristWeekCounter = 0;
     private int totalTouristsLastMonth = 0;
     private Random random = new Random();
+    private long totalGameHours = 0; // Accumulates in-game hours
+
 
 
 
@@ -188,6 +190,30 @@ public class Map {
         }
         return null;
     }
+    private long lastJeepLaunchGameHours = -100;
+
+    private void tickOneHour() {
+        totalGameHours++;
+
+        // Handle tourist week
+        if (totalGameHours % 168 == 0) {
+            handleTouristWeek();
+        }
+
+        // Move all entities once per hour
+        moveEntitiesOnce();
+
+        // Launch jeeps if 5 in-game hours passed
+        if (totalGameHours - lastJeepLaunchGameHours >= 5) {
+            if (checkLaunchJeep()) {
+                lastJeepLaunchGameHours = totalGameHours;
+            }
+        }
+    }
+
+
+
+
 
 
 
@@ -359,49 +385,67 @@ public class Map {
 
     private void initScheduler() {
         scheduler = Executors.newScheduledThreadPool(1);
-        scheduler.scheduleAtFixedRate(this::moveAnimals, 0, 1000, TimeUnit.MILLISECONDS);
-        /// EZT KOMMENTELD KI HA NEM AKAROD HOGY JÖJJÖN POACHER
-        scheduler.scheduleAtFixedRate(this::movePoacher, 0, 1000, TimeUnit.MILLISECONDS);
-        scheduler.scheduleAtFixedRate(this::handleTouristWeek, 0, 7, TimeUnit.SECONDS);
+        final long intervalMillis = 1000;
 
+        scheduler.scheduleAtFixedRate(() -> {
+            if (gameClock.isPaused()) return;
+
+            long hoursPerTick = gameClock.getIncrementPerTick().toHours();
+            for (int i = 0; i < hoursPerTick; i++) {
+                tickOneHour();
+            }
+        }, 0, intervalMillis, TimeUnit.MILLISECONDS);
     }
 
-    private void moveAnimals() {
-        if (gameClock.isPaused()) return;
 
-        long hours = gameClock.getIncrementPerTick().toHours();
-        int ticks = (int) Math.max(1, hours);
-
-        for (int i = 0; i < ticks; i++) {
-            for (Entity entity : new ArrayList<>(entities)) {
-                if (entity instanceof Animal animal) {
-                    setLeader();
-                    animal.move(this);
-                    if (!animal.isAlive()) {
-                        entities.remove(animal);
-                        break;
-                    }
-                } else if (entity instanceof Jeep jeep) {
-                    jeep.move(this);
+    private void moveEntitiesOnce() {
+        for (Entity entity : new ArrayList<>(entities)) {
+            if (entity instanceof Animal animal) {
+                setLeader(); // group sync
+                animal.move(this);
+                if (!animal.isAlive()) {
+                    entities.remove(animal);
                 }
+            } else if (entity instanceof Jeep jeep) {
+                jeep.move(this);
+            } else if (entity instanceof Poacher poacher) {
+                boolean success = poacher.move(this);
+                if (success) break;
             }
         }
+
+        if (shouldSpawnPoacher()) {
+            entities.add(new Poacher(this, setStartPointForPoacher(this.getTiles())));
+        }
+
         checkLaunchJeep();
     }
 
-    private void checkLaunchJeep() {
-        if (waitingTourists <= 0 || availableJeeps.isEmpty()) return;
+    private boolean shouldSpawnPoacher() {
+        boolean alreadyExists = entities.stream().anyMatch(e -> e instanceof Poacher);
+        if (alreadyExists) return false;
 
-        // Ensure 5 in-game hours have passed since last launch
-        if (lastJeepStartTime != null &&
-            Duration.between(lastJeepStartTime, gameClock.getCurrentTime()).toHours() < 5) return;
+        long animalCount = entities.stream()
+            .filter(e -> e instanceof Animal && ((Animal) e).isAlive())
+            .count();
+
+        if (animalCount == 0) return false;
+
+        double spawnChance = Math.min(animalCount / 10.0, 1.0);
+        return random.nextDouble() < spawnChance;
+    }
+
+
+
+
+    private boolean checkLaunchJeep() {
+        if (waitingTourists <= 0 || availableJeeps.isEmpty()) return false;
 
         Jeep jeep = availableJeeps.remove(0);
         int toBoard = Math.min(4, waitingTourists);
         jeep.startTour(ticketPriceLevel, toBoard);
         waitingTourists -= toBoard;
 
-        // Place jeep at entrance
         Point entrance = getEntrancePosition();
         if (entrance != null) {
             jeep.setPos(entrance);
@@ -409,28 +453,10 @@ public class Map {
             entities.add(jeep);
         }
 
-        lastJeepStartTime = gameClock.getCurrentTime();
+        return true;
     }
 
 
-
-    private void movePoacher() {
-        if (gameClock.isPaused()) return;
-
-        long hours = gameClock.getIncrementPerTick().toHours();
-        int ticks = (int) Math.max(1, hours);
-
-        for (int i = 0; i < ticks; i++) {
-            if (addPoacher()) {
-                for (Entity entity : entities) {
-                    if (entity instanceof Poacher) {
-                        boolean isHunted = ((Poacher) entity).move(this);
-                        if (isHunted) break;
-                    }
-                }
-            }
-        }
-    }
 
     private boolean addPoacher() {
         for (Entity entity : entities) {
@@ -557,7 +583,7 @@ public class Map {
         if (touristWeekCounter >= 4) {
             touristWeekCounter = 0;
 
-            if (totalTouristsLastMonth >= 20 && averageRating >= 2.5) {
+            if (totalTouristsLastMonth >= (30 * ticketPriceLevel) && averageRating >= 3.5) {
                 raisePrice = true;
             } else {
                 raisePrice = false;
@@ -730,4 +756,15 @@ public class Map {
             .mapToInt(e -> ((Jeep)e).getPassengerCount())
             .sum();
     }
+
+    public boolean canIncreaseTicketPrice() {
+        return raisePrice && ticketPriceLevel < 4;
+    }
+
+    public boolean canDecreaseTicketPrice() {
+        return lowerPrice && ticketPriceLevel > 1;
+    }
+
+
+
 }
