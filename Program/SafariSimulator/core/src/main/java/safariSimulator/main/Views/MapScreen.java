@@ -1,10 +1,7 @@
 package safariSimulator.main.Views;
 
 import com.badlogic.gdx.*;
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -191,6 +188,22 @@ public class MapScreen extends InputAdapter implements Screen {
         topBar.setFillParent(true);
         topBar.top();
 
+
+
+
+        /*buttons*//*
+        shopButton.getLabel().setFontScale(1.2f);
+        shopButton.pad(10);
+        exitButton.getLabel().setFontScale(1.2f);
+        exitButton.pad(10);
+        pauseButton.getLabel().setFontScale(1.2f);
+        pauseButton.pad(10);
+        speedButton.getLabel().setFontScale(1.2f);
+        speedButton.pad(10);
+        roadModeToggle.getLabel().setFontScale(1.2f);
+        roadModeToggle.pad(10);*/
+
+
         roadModeToggle = new TextButton("Build Mode", skin);
         roadModeToggle.setVisible(false);
         stage.addActor(roadModeToggle);
@@ -213,7 +226,7 @@ public class MapScreen extends InputAdapter implements Screen {
         });
 
 
-        pauseButton = new TextButton("⏸", skin);
+        pauseButton = new TextButton("Pause", skin);
         pauseButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -226,15 +239,15 @@ public class MapScreen extends InputAdapter implements Screen {
                         return;
                     }
                     map.resumeGameClock();
-                    pauseButton.setText("⏸");
+                    pauseButton.setText("Pause");
                 } else {
                     map.pauseGameClock();
-                    pauseButton.setText("▶");
+                    pauseButton.setText("Play");
                 }
             }
         });
 
-        speedButton = new TextButton("→", skin);
+        speedButton = new TextButton("~>", skin);
         speedButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -242,15 +255,15 @@ public class MapScreen extends InputAdapter implements Screen {
                 switch (speedState) {
                     case 0:
                         map.setSpeedToHourPerSecond();
-                        speedButton.setText("→");
+                        speedButton.setText("~>");
                         break;
                     case 1:
                         map.setSpeedToDayPerSecond();
-                        speedButton.setText("→→");
+                        speedButton.setText("~>>");
                         break;
                     case 2:
                         map.setSpeedToWeekPerSecond();
-                        speedButton.setText("→→→");
+                        speedButton.setText("~>>>");
                         break;
                 }
             }
@@ -454,8 +467,14 @@ public class MapScreen extends InputAdapter implements Screen {
                 } else {
                     for (Tile tile : map.getTiles()) {
                         if (tile.getPos().getX() == pos.getX() && tile.getPos().getY() == pos.getY()) {
-                            if (tile.getHealth() != -1) { // ✅ Allow on sand and grass, but NOT water
+                            if (tile.getHealth() != -1 && !(object instanceof Plant)) { // ✅ Allow on sand and grass, but NOT water
                                 batch.draw(objectTexture, pos.getX() * TILE_SIZE, pos.getY() * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                            }else if(object instanceof Plant) {
+                                if(tile.getHealth() > 0) {
+                                    batch.draw(objectTexture, pos.getX() * TILE_SIZE, pos.getY() * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                                }else{
+                                    this.map.getObjects().remove(object);
+                                }
                             }
                             break;
                         }

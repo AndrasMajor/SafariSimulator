@@ -40,17 +40,22 @@ public class ShopContainer extends Window {
     private Window insufficientFundsWindow;
 
     public ShopContainer(Skin skin, MapScreen mapScreen) {
-        super("Shop", skin);
+        super("Safari Shop", skin);
         this.mapScreen = mapScreen;
 
-        this.setSize(400, 300);
+        this.setSize(700, 600);
+        this.setColor(0.2f, 0.5f, 0.3f, 0.95f);
+
+
         this.setPosition(
             Gdx.graphics.getWidth() / 2f - this.getWidth() / 2,
             Gdx.graphics.getHeight() / 2f - this.getHeight() / 2
         );
         this.setMovable(false);
 
-        Label title = new Label("Choose!", skin);
+        Label title = new Label("Safari Shop", skin);
+        title.setFontScale(2.0f);
+        title.setColor(0.9f, 1f, 0.2f, 1f);
 
         lionButton = new TextButton("Lion", skin);
         hyenaButton = new TextButton("Hyena", skin);
@@ -75,24 +80,33 @@ public class ShopContainer extends Window {
         Label bushPrice = new Label("30$", skin);
         Label waterPrice = new Label("30$", skin);
 
+        for (Label label : new Label[]{
+            lionPrice, hyenaPrice, zebraPrice, elephantPrice,
+            roadPrice, jeepPrice, grassPrice, treePrice,
+            bushPrice, waterPrice}) {
+            label.setFontScale(1.0f);
+            label.setColor(0,1f,0,1f);
+
+        }
+
         Table table = new Table();
         table.setFillParent(true);
-
+        table.defaults().pad(12);
         // Title row
         table.add(title).colspan(4).center().padBottom(10);
         table.row();
 
         // Animal row
-        table.add(lionButton).pad(10);
-        table.add(hyenaButton).pad(10);
-        table.add(zebraButton).pad(10);
-        table.add(elephantButton).pad(10);
+        table.add(lionButton);
+        table.add(hyenaButton);
+        table.add(zebraButton);
+        table.add(elephantButton);
         table.row();
 
-        table.add(lionPrice).padTop(0).padBottom(10).center();
-        table.add(hyenaPrice).padTop(0).padBottom(10).center();
-        table.add(zebraPrice).padTop(0).padBottom(10).center();
-        table.add(elephantPrice).padTop(0).padBottom(10).center();
+        table.add(lionPrice).padTop(0).padBottom(5).center();
+        table.add(hyenaPrice).padTop(0).padBottom(5).center();
+        table.add(zebraPrice).padTop(0).padBottom(5).center();
+        table.add(elephantPrice).padTop(0).padBottom(5).center();
         table.row();
 
         // Plant row
@@ -102,9 +116,9 @@ public class ShopContainer extends Window {
         table.add().pad(5); // Empty for spacing
         table.row();
 
-        table.add(grassPrice).padTop(5).padBottom(10).center();
-        table.add(treePrice).padTop(5).padBottom(10).center();
-        table.add(bushPrice).padTop(5).padBottom(10).center();
+        table.add(grassPrice).padTop(5).padBottom(5).center();
+        table.add(treePrice).padTop(5).padBottom(5).center();
+        table.add(bushPrice).padTop(5).padBottom(5).center();
         table.add().pad(5); // Empty for spacing
         table.row();
 
@@ -116,14 +130,23 @@ public class ShopContainer extends Window {
 
         table.row();
 
-        table.add(roadPrice).padTop(5).padBottom(10).center();
-        table.add(jeepPrice).padTop(5).padBottom(10).center();
-        table.add(waterPrice).padTop(5).padBottom(10).center();
+        table.add(roadPrice).padTop(5).padBottom(5).center();
+        table.add(jeepPrice).padTop(5).padBottom(5).center();
+        table.add(waterPrice).padTop(5).padBottom(5).center();
         table.add().pad(5); // Empty for spacing
         table.row();
 
         // Close button row
-        table.add(closeButton).pad(10).colspan(4).center().bottom();
+        table.add(closeButton).padTop(50).colspan(4).center().bottom();
+
+        for (TextButton button : new TextButton[]{
+            lionButton, hyenaButton, zebraButton, elephantButton,
+            roadButton, jeepButton, grassButton, treeButton,
+            bushButton, waterButton, closeButton}) {
+            button.getLabel().setFontScale(1.3f);
+            button.pad(15);
+            button.setColor(0.2f, 0.6f, 1f, 1f);
+        }
 
         this.addActor(table);
 
@@ -280,6 +303,4 @@ public class ShopContainer extends Window {
 
 
     }
-
-
 }
