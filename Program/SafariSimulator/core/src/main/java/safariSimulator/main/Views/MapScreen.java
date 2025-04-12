@@ -27,6 +27,7 @@ import safariSimulator.main.Models.Entity.Animal.Carnivore.Lion;
 import safariSimulator.main.Models.Entity.Animal.Herbivore.Elephant;
 import safariSimulator.main.Models.Entity.Animal.Herbivore.Zebra;
 import safariSimulator.main.Models.Entity.Entity;
+import safariSimulator.main.Models.Entity.Human.Keeper;
 import safariSimulator.main.Models.Entity.Human.Poacher;
 import safariSimulator.main.Models.Entity.Jeep;
 import safariSimulator.main.Models.Map;
@@ -54,6 +55,7 @@ public class MapScreen extends InputAdapter implements Screen {
     private Texture hyenaTexture;
     private Texture elephantTexture;
     private Texture jeepTexture;
+    private Texture keeperTexture;
     private Texture treeTexture;
     private Texture bushTexture;
     private Texture roadTexture;
@@ -127,6 +129,7 @@ public class MapScreen extends InputAdapter implements Screen {
 
         poacherTexture = new Texture(Gdx.files.internal("entities/poacher.png"));
         jeepTexture = new Texture(Gdx.files.internal("entities/jeep.png"));
+        keeperTexture = new Texture(Gdx.files.internal("entities/keeper.png"));
 
         treeTexture = new Texture(Gdx.files.internal("objects/tree.png"));
         bushTexture = new Texture(Gdx.files.internal("objects/bush.png"));
@@ -503,6 +506,7 @@ public class MapScreen extends InputAdapter implements Screen {
         if (entity instanceof Zebra) return zebraTexture;
         if (entity instanceof Poacher) return poacherTexture;
         if (entity instanceof Jeep) return jeepTexture;
+        if (entity instanceof Keeper) return keeperTexture;
         return null; // Unknown entity type
     }
 

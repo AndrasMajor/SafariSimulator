@@ -3,6 +3,7 @@ package safariSimulator.main.Models;
 import safariSimulator.main.Database.MapState;
 import safariSimulator.main.Models.Entity.Animal.Animal;
 import safariSimulator.main.Models.Entity.Entity;
+import safariSimulator.main.Models.Entity.Human.Keeper;
 import safariSimulator.main.Models.Entity.Human.Poacher;
 import safariSimulator.main.Models.Entity.Human.Tourist;
 import safariSimulator.main.Models.Entity.Jeep;
@@ -411,6 +412,18 @@ public class Map {
             } else if (entity instanceof Poacher poacher) {
                 boolean success = poacher.move(this);
                 if (success) break;
+            } else if (entity instanceof Keeper keeper) {
+                if ((keeper.targetPoint.getX() == 0 && keeper.targetPoint.getY() == 0 ) || (keeper.pos.getX() == keeper.targetPoint.getX() && keeper.pos.getY() == keeper.targetPoint.getY())) {
+                    keeper.chooseTargetPoint(this.tiles, this.entities);
+                }
+                keeper.move(this);
+                this.money -= keeper.price;
+                //if (keeper.isPoacherInShootingRange(this.entities)) {
+                //    if (keeper.keeperWonInFight()) entities.remove(getPoacher());
+                //    else entities.remove(keeper);
+                //    break;
+                //}
+
             }
         }
 
@@ -765,6 +778,16 @@ public class Map {
         return lowerPrice && ticketPriceLevel > 1;
     }
 
+    private Poacher getPoacher() {
+        Poacher poacher = null;
+        for(Entity entity : entities) {
+            if (entity instanceof Poacher) {
+                poacher = (Poacher) entity;
+                break;
+            }
+        }
+        return poacher;
+    }
 
 
 }
