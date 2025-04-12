@@ -88,11 +88,18 @@ public class MapScreen extends InputAdapter implements Screen {
     private int speedState = 0; // 0 = hour/sec, 1 = day/sec, 2 = week/sec
 
 
+    // stat showers
+    private MapSummaryView summaryView;
+    private TextButton toggleSummaryButton;
+    private boolean summaryVisible = true;
+
+
     public MapScreen(String level) {
         map = new Map(level);
         map.generateMap();
         map.generatePlants();
         map.placeEntranceAndExit();
+        map.pauseGameClock();
         shopContainer = new ShopContainer(new Skin(Gdx.files.internal("uiskin.json")), this);
         saveContainer = new SaveContainer(new Skin(Gdx.files.internal("uiskin.json")), this);
     }
@@ -238,6 +245,7 @@ public class MapScreen extends InputAdapter implements Screen {
                         dialog.show(stage);
                         return;
                     }
+                    map.autoNumberRoadsFromEntrance();
                     map.resumeGameClock();
                     pauseButton.setText("Pause");
                 } else {
@@ -310,6 +318,23 @@ public class MapScreen extends InputAdapter implements Screen {
         moneyTable.bottom().right();
         moneyTable.add(moneyLabel).pad(10).right().bottom();
         stage.addActor(moneyTable);
+
+        summaryView = new MapSummaryView(skin, map);
+        summaryView.setPosition(10, 10); // Bottom-left
+        stage.addActor(summaryView);
+
+        toggleSummaryButton = new TextButton("📊", skin);
+        toggleSummaryButton.setSize(40, 40);
+        toggleSummaryButton.setPosition(10, summaryView.getHeight() + 20);
+        toggleSummaryButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                summaryVisible = !summaryVisible;
+                summaryView.setVisible(summaryVisible);
+            }
+        });
+        stage.addActor(toggleSummaryButton);
+
 
     }
 
@@ -403,46 +428,6 @@ public class MapScreen extends InputAdapter implements Screen {
             }
         }*/
 
-        for (Entity entity : map.getEntities()) {
-            // Frissítjük a mozgást, ha van
-            if (entity.mover != null && !entity.mover.isComplete()) {
-                entity.mover.update(delta);
-            }
-
-            // Pozíció meghatározása
-            float x = (entity.mover != null) ? entity.mover.getInterpolatedX() : entity.getPos().getX();
-            float y = (entity.mover != null) ? entity.mover.getInterpolatedY() : entity.getPos().getY();
-            float drawX = x * TILE_SIZE;
-            float drawY = y * TILE_SIZE;
-
-            // Skálázás és forgatás
-            float scale = entity.getScale();
-            float scaledSize = TILE_SIZE * scale;
-            float rotation = (entity.mover != null && !entity.mover.isComplete())
-                ? entity.mover.getAngleDeg() - 90f
-                : 0f;
-
-            Texture texture = getTextureFor(entity);
-
-            // Rajzolás
-            if (scale != 1f || rotation != 0f) {
-                batch.draw(
-                    texture,
-                    drawX + 16 - scaledSize / 2f,
-                    drawY + 16 - scaledSize / 2f,
-                    scaledSize / 2f, scaledSize / 2f,
-                    scaledSize, scaledSize,
-                    1f, 1f,
-                    rotation,
-                    0, 0,
-                    texture.getWidth(), texture.getHeight(),
-                    false, false
-                );
-            } else {
-                batch.draw(texture, drawX, drawY, TILE_SIZE, TILE_SIZE);
-            }
-        }
-
 
 
         for (Object object : map.getObjects()) {
@@ -483,6 +468,48 @@ public class MapScreen extends InputAdapter implements Screen {
             }
         }
 
+        for (Entity entity : map.getEntities()) {
+            // Frissítjük a mozgást, ha van
+            float timeScale = map.getGameClock().getTimeSpeedMultiplier();
+            if (entity.mover != null && !entity.mover.isComplete()) {
+                entity.mover.update(delta * timeScale);
+            }
+
+
+            // Pozíció meghatározása
+            float x = (entity.mover != null) ? entity.mover.getInterpolatedX() : entity.getPos().getX();
+            float y = (entity.mover != null) ? entity.mover.getInterpolatedY() : entity.getPos().getY();
+            float drawX = x * TILE_SIZE;
+            float drawY = y * TILE_SIZE;
+
+            // Skálázás és forgatás
+            float scale = entity.getScale();
+            float scaledSize = TILE_SIZE * scale;
+            float rotation = (entity.mover != null && !entity.mover.isComplete())
+                ? entity.mover.getAngleDeg() - 90f
+                :  entity.rotationDeg;
+
+            Texture texture = getTextureFor(entity);
+
+            // Rajzolás
+            if (scale != 1f || rotation != 0f) {
+                batch.draw(
+                    texture,
+                    drawX + 16 - scaledSize / 2f,
+                    drawY + 16 - scaledSize / 2f,
+                    scaledSize / 2f, scaledSize / 2f,
+                    scaledSize, scaledSize,
+                    1f, 1f,
+                    rotation,
+                    0, 0,
+                    texture.getWidth(), texture.getHeight(),
+                    false, false
+                );
+            } else {
+                batch.draw(texture, drawX, drawY, TILE_SIZE, TILE_SIZE);
+            }
+        }
+
 
         moneyLabel.setText(map.money + "$");
 
@@ -494,6 +521,8 @@ public class MapScreen extends InputAdapter implements Screen {
 
         dateLabel.setText(map.getTime().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
         stage.draw();
+        summaryView.update();
+
     }
 
     private Texture getTextureFor(Entity entity) {

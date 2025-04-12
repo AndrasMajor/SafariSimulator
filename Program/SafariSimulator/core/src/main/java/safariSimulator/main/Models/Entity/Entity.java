@@ -22,6 +22,7 @@ public abstract class Entity {
     public Point destPos;
 
     public int price;
+    public float rotationDeg = 0;
 
     public Mover mover;
 
@@ -49,7 +50,8 @@ public abstract class Entity {
     public void setPos(Point pos) {
         if (this.pos != null && !this.pos.equals(pos)) {
             // Start movement animation from current to new position
-            this.mover = new Mover(this.pos, pos, 1f); // 0.3 seconds to move
+            this.mover = new Mover(this.pos, pos, 1f);
+            this.rotationDeg = mover.getAngleDeg() - 90f;
         }
         this.pos = pos;
     }
