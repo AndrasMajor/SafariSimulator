@@ -17,7 +17,7 @@ public class Mover {
 
     public void update(float delta) {
         progress += delta / duration;
-        progress = Math.min(progress + delta / duration, 1f);
+        progress = Math.min(progress, 1f);
     }
 
 

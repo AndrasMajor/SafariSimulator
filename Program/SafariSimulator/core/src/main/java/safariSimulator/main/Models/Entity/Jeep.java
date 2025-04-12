@@ -81,8 +81,6 @@ public class Jeep extends Entity {
      * If there are animals in sight, it will not move.
      */
     public void move(Map map) {
-        if (this.isMoving()) return;
-
         this.roadNumber = map.findRoadNumber(this.pos); // keep in sync
         // Check end of tour first
         if (map.findRoadNumber(this.pos) == map.getMaxRoadNumber()) {

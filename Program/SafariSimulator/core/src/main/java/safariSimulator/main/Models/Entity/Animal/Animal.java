@@ -201,9 +201,6 @@ public abstract class Animal extends Entity {
 
 
     public void move(Map map) {
-        if (this.mover != null && !this.mover.isComplete()) {
-            return; // Wait for the animation to finish
-        }
         List<Tile> tiles = map.getTiles();
         List<Entity> entities = map.getEntities();
         Point currentPos = this.getPos();
@@ -526,7 +523,6 @@ public abstract class Animal extends Entity {
         List<Point> path = findPath(this.getPos(), target, tiles);
         if (!path.isEmpty()) {
             Point nextStep = path.get(0);
-            this.mover = new Mover(this.getPos(), nextStep, 0.7f);
             this.setPos(nextStep);
         }
     }

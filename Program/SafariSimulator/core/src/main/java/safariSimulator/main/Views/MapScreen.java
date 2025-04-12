@@ -76,6 +76,8 @@ public class MapScreen extends InputAdapter implements Screen {
     public TextButton shopButton;
     public TextButton exitButton;
     public TextButton roadModeToggle;
+    public TextButton increasePriceButton;
+    public TextButton decreasePriceButton;
     public Label moneyLabel;
     private Skin skin;
     public ShopContainer shopContainer;
@@ -317,6 +319,33 @@ public class MapScreen extends InputAdapter implements Screen {
         });
         stage.addActor(toggleSummaryButton);
 
+        increasePriceButton = new TextButton("Raise Ticket Price", skin);
+        decreasePriceButton = new TextButton("Lower Ticket Price", skin);
+
+        increasePriceButton.setSize(130, 45);
+        decreasePriceButton.setSize(130, 45);
+
+        increasePriceButton.setPosition(10, toggleSummaryButton.getY() + toggleSummaryButton.getHeight() + 10);
+        decreasePriceButton.setPosition(150, toggleSummaryButton.getY() + toggleSummaryButton.getHeight() + 10);
+
+        increasePriceButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                map.increaseTicketPrice();
+            }
+        });
+
+        decreasePriceButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                map.decreaseTicketPrice();
+            }
+        });
+
+        stage.addActor(increasePriceButton);
+        stage.addActor(decreasePriceButton);
+
+
 
     }
 
@@ -461,6 +490,9 @@ public class MapScreen extends InputAdapter implements Screen {
         dateLabel.setText(map.getTime().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
         stage.draw();
         summaryView.update();
+        increasePriceButton.setVisible(map.canIncreaseTicketPrice());
+        decreasePriceButton.setVisible(map.canDecreaseTicketPrice());
+
 
     }
 
