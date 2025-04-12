@@ -10,8 +10,19 @@ import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
+import safariSimulator.main.Models.Entity.Animal.Carnivore.Hyena;
+import safariSimulator.main.Models.Entity.Animal.Carnivore.Lion;
+import safariSimulator.main.Models.Entity.Animal.Herbivore.Elephant;
+import safariSimulator.main.Models.Entity.Animal.Herbivore.Zebra;
+import safariSimulator.main.Models.Entity.Entity;
+import safariSimulator.main.Models.Entity.Human.Poacher;
+import safariSimulator.main.Models.Entity.Jeep;
 import safariSimulator.main.Models.Map;
+import safariSimulator.main.Models.Objects.Plant;
+import safariSimulator.main.Models.Objects.Road;
 import safariSimulator.main.Models.Tile.Tile;
+import safariSimulator.main.Models.Objects.Object;
+import safariSimulator.main.Models.Objects.EntranceExitRoad;
 
 public class Minimap extends Actor {
     public static final int SIZE = 200;
@@ -31,6 +42,10 @@ public class Minimap extends Actor {
         minimapTexture = new Texture(pixmap);
 
         renderMinimap();
+        renderObjects();
+        renderEntities();
+        minimapTexture.draw(pixmap, 0, 0);
+
 
         addListener(new InputListener() {
             @Override
@@ -63,9 +78,50 @@ public class Minimap extends Actor {
         minimapTexture.draw(pixmap, 0, 0);
     }
 
+    private void renderEntities() {
+        float tileSize = (float) SIZE / map.getWidth();
+        for (Entity entity : map.getEntities()) {
+            Color color = null;
+
+            if (entity instanceof Elephant) color = Color.LIGHT_GRAY;
+            else if (entity instanceof Lion) color = new Color(0.5f, 0.25f, 0f, 1f); // brown
+            else if (entity instanceof Hyena) color = Color.ORANGE;
+            else if (entity instanceof Zebra) color = Color.WHITE;
+            else if (entity instanceof Poacher) color = Color.BLACK;
+            else if (entity instanceof Jeep) color = Color.RED;
+
+            if (color != null) {
+                pixmap.setColor(color);
+                int x = (int)(entity.getPos().getX() * tileSize);
+                int y = (int)((map.getHeight() - 1 - entity.getPos().getY()) * tileSize);
+                pixmap.fillRectangle(x, y, (int)tileSize, (int)tileSize);
+            }
+        }
+    }
+
+    private void renderObjects() {
+        float tileSize = (float) SIZE / map.getWidth();
+        for (Object obj : map.getObjects()) {
+            Color color = null;
+
+            if (obj instanceof Plant) color = new Color(0f, 0.5f, 0f, 1f); // dark green
+            else if (obj instanceof Road) color = Color.DARK_GRAY;
+
+            if (color != null) {
+                pixmap.setColor(color);
+                int x = (int)(obj.getPos().getX() * tileSize);
+                int y = (int)((map.getHeight() - 1 - obj.getPos().getY()) * tileSize);
+                pixmap.fillRectangle(x, y, (int)tileSize, (int)tileSize);
+            }
+        }
+    }
+
+
+
     @Override
     public void draw(Batch batch, float parentAlpha) {
         super.draw(batch, parentAlpha);
+        updateMinimap();
 
         batch.setColor(1, 1, 1, parentAlpha);
         batch.draw(minimapTexture, getX(), getY(), getWidth(), getHeight());
@@ -100,6 +156,57 @@ public class Minimap extends Actor {
             batch.draw(minimapTexture, rectX + rectWidth - 1, rectY, 1, rectHeight);
         }
     }
+
+    public void updateMinimap() {
+        pixmap.setColor(0, 0, 0, 1);
+        pixmap.fill();
+
+        int mapWidth = map.getWidth();
+        int mapHeight = map.getHeight();
+        float tileSize = (float) SIZE / mapWidth;
+
+        // Draw tiles
+        for (Tile tile : map.getTiles()) {
+            Color color;
+            if (tile.health == -1) color = Color.BLUE;
+            else if (tile.health == 0) color = Color.YELLOW;
+            else color = Color.GREEN;
+
+            pixmap.setColor(color);
+            int x = (int)(tile.pos.getX() * tileSize);
+            int y = (int)((mapHeight - 1 - tile.pos.getY()) * tileSize);
+            pixmap.fillRectangle(x, y, (int)tileSize, (int)tileSize);
+        }
+
+        // Draw objects
+        for (safariSimulator.main.Models.Objects.Object obj : map.getObjects()) {
+            if (obj instanceof Plant || obj instanceof Road || obj instanceof EntranceExitRoad) {
+                pixmap.setColor(new Color(0f, 0.5f, 0f, 1f)); // dark green
+                int x = (int)(obj.getPos().getX() * tileSize);
+                int y = (int)((mapHeight - 1 - obj.getPos().getY()) * tileSize);
+                pixmap.fillRectangle(x, y, (int)tileSize, (int)tileSize);
+            }
+        }
+
+        // Draw entities
+        for (Entity entity : map.getEntities()) {
+            Color color = Color.WHITE;
+            if (entity instanceof Elephant) color = Color.LIGHT_GRAY;
+            else if (entity instanceof Lion) color = new Color(0.4f, 0.2f, 0f, 1f); // brown
+            else if (entity instanceof Hyena) color = Color.ORANGE;
+            else if (entity instanceof Poacher) color = Color.BLACK;
+            else if (entity instanceof Zebra) color = Color.WHITE;
+            else if (entity instanceof Jeep) color = Color.RED;
+
+            pixmap.setColor(color);
+            int x = (int)(entity.getPos().getX() * tileSize);
+            int y = (int)((mapHeight - 1 - entity.getPos().getY()) * tileSize);
+            pixmap.fillRectangle(x, y, (int)tileSize, (int)tileSize);
+        }
+
+        minimapTexture.draw(pixmap, 0, 0);
+    }
+
 
     private void handleMinimapClick(float x, float y) {
         int mapWidth = map.getWidth();

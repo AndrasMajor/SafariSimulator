@@ -16,6 +16,7 @@ import safariSimulator.main.Models.GameClock;
 import safariSimulator.main.Models.Objects.Road;
 import safariSimulator.main.Models.Objects.RoadDirection;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.Executors;
@@ -36,7 +37,9 @@ public class Map {
     public int waterPrice = 30;
 
     // tourist based vars
-    private List<Jeep> Jeeps = new ArrayList<>();
+    private int waitingTourists = 0;
+    private List<Jeep> availableJeeps = new ArrayList<>();
+    private LocalDateTime lastJeepStartTime = null;
     private List<Double> weeklyRatings = new ArrayList<>();
     private int ticketPriceLevel = 1; // 1: 20, 2: 40, 3: 80, 4: 160
     private boolean raisePrice = false;
@@ -234,34 +237,44 @@ public class Map {
     }
 
     //--------------------------------------
+    public Point getEntrancePosition() {
+        for (Object obj : objects) {
+            if (obj instanceof EntranceExitRoad road && road.isEntrance) {
+                return road.getPos();
+            }
+        }
+        return null;
+    }
 
     // SHOP FUNCTIONS ----------------------
     public int buyEntity(Entity entity) {
-        if (this.money >= entity.price) {
-            if (entity instanceof Jeep) {
-                entity.setPos(new Point(0, 0));
-            } else {
-                List<Tile> nonWaterTiles = new ArrayList<>();
-                for (Tile tile : tiles) {
-                    if (tile.getHealth() >= 0) {
-                        nonWaterTiles.add(tile);
-                    }
-                }
-                if (!nonWaterTiles.isEmpty()) {
-                    Random random = new Random();
-                    entity.setPos(nonWaterTiles.get(random.nextInt(nonWaterTiles.size())).getPos());
-                } else {
-                    return -1;
+        if (this.money >= entity.price)
+        {
+            List<Tile> nonWaterTiles = new ArrayList<>();
+            for (Tile tile : tiles) {
+                if (tile.getHealth() >= 0) {
+                    nonWaterTiles.add(tile);
                 }
             }
+            if (!nonWaterTiles.isEmpty()) {
+                Random random = new Random();
+                entity.setPos(nonWaterTiles.get(random.nextInt(nonWaterTiles.size())).getPos());
+            } else {
+                return -1;
+            }
 
-            entities.add(entity);
+
+            if (entity instanceof Jeep jeep) {
+                availableJeeps.add(jeep);
+            } else {
+                entities.add(entity);
+            }
+
             this.money -= entity.price;
             return 1;
         }
         return 0;
     }
-
     public int buyObject(Object object) {
         if (this.money >= object.price) {
             objects.add(object);
@@ -357,23 +370,49 @@ public class Map {
         if (gameClock.isPaused()) return;
 
         long hours = gameClock.getIncrementPerTick().toHours();
-
-        // Fallback to at least one movement if it's 0 (safety)
         int ticks = (int) Math.max(1, hours);
 
         for (int i = 0; i < ticks; i++) {
-            for (Entity entity : entities) {
-                if (entity instanceof Animal) {
+            for (Entity entity : new ArrayList<>(entities)) {
+                if (entity instanceof Animal animal) {
                     setLeader();
-                    ((Animal) entity).move(this);
-                    if ( !((Animal) entity).isAlive()) {
-                        entities.remove(entity);
-                        break; // Exit the loop to avoid ConcurrentModificationException
+                    animal.move(this);
+                    if (!animal.isAlive()) {
+                        entities.remove(animal);
+                        break;
                     }
+                } else if (entity instanceof Jeep jeep) {
+                    jeep.move(this);
                 }
             }
         }
+        checkLaunchJeep();
     }
+
+    private void checkLaunchJeep() {
+        if (waitingTourists <= 0 || availableJeeps.isEmpty()) return;
+
+        // Ensure 5 in-game hours have passed since last launch
+        if (lastJeepStartTime != null &&
+            Duration.between(lastJeepStartTime, gameClock.getCurrentTime()).toHours() < 5) return;
+
+        Jeep jeep = availableJeeps.remove(0);
+        int toBoard = Math.min(4, waitingTourists);
+        jeep.startTour(ticketPriceLevel, toBoard);
+        waitingTourists -= toBoard;
+
+        // Place jeep at entrance
+        Point entrance = getEntrancePosition();
+        if (entrance != null) {
+            jeep.setPos(entrance);
+            jeep.roadNumber = findRoadNumber(entrance);
+            entities.add(jeep);
+        }
+
+        lastJeepStartTime = gameClock.getCurrentTime();
+    }
+
+
 
     private void movePoacher() {
         if (gameClock.isPaused()) return;
@@ -495,28 +534,25 @@ public class Map {
     // Tourist logic
 
     private void handleTouristWeek() {
-        int touristCount = 0;
+        int totalTouristCount = 0;
         double totalWeightedRating = 0;
-
-        for (Jeep jeep : Jeeps) {
-            int capacity = jeep.getPassengerCount();
-            double rating = jeep.getRating();
-            totalWeightedRating += rating * capacity;
-            touristCount += capacity;
-
-            // Reset the Jeep for the new week
-            jeep.startTour(ticketPriceLevel, 0); // clears passengers + resets rating to 2.5
+        // Account for any leftover tourists who never got on a jeep
+        if (waitingTourists > 0) {
+            totalWeightedRating += 0.0 * waitingTourists; // rating 0.0
+            totalTouristCount += waitingTourists;
+            waitingTourists = 0;
         }
 
-        double averageRating = touristCount > 0 ? totalWeightedRating / touristCount : 2.5;
-        if (touristCount > 0) {
+        // Compute average
+        double averageRating = totalTouristCount > 0 ? totalWeightedRating / totalTouristCount : 2.5;
+        if (totalTouristCount > 0) {
             weeklyRatings.add(averageRating);
-            totalTouristsLastMonth += touristCount;
+            totalTouristsLastMonth += totalTouristCount;
         }
 
         System.out.println("Average tourist rating this week: " + averageRating);
 
-        // Reset counter after 4 weeks
+        // Check monthly adjustments
         touristWeekCounter++;
         if (touristWeekCounter >= 4) {
             touristWeekCounter = 0;
@@ -533,7 +569,7 @@ public class Map {
             weeklyRatings.clear();
         }
 
-        // Generate next week's tourists
+        // Spawn next week's tourists
         spawnTouristsForWeek(averageRating);
     }
 
@@ -545,9 +581,9 @@ public class Map {
         int number = (int) (baseMin + (lastWeekAvgRating / 5.0) * (baseMax - baseMin));
         number = Math.max(baseMin, Math.min(number, baseMax));
 
-        int jeepCapacity = Jeeps.size() * 4;
+        int jeepCount = (int) entities.stream().filter(e -> e instanceof Jeep).count() + availableJeeps.size();
+        int jeepCapacity = jeepCount * 4;
         int boardingTourists = Math.min(number, jeepCapacity);
-        int deniedTourists = number - boardingTourists;
 
         int ticketPrice = switch (ticketPriceLevel) {
             case 1 -> 20;
@@ -559,16 +595,7 @@ public class Map {
 
         money += boardingTourists * ticketPrice;
 
-        int touristsRemaining = boardingTourists;
-        for (Jeep jeep : Jeeps) {
-            int toBoard = Math.min(4, touristsRemaining);
-            jeep.startTour(ticketPriceLevel, toBoard);
-            touristsRemaining -= toBoard;
-        }
-
-        if (deniedTourists > 0) {
-            System.out.println(deniedTourists + " tourists were turned away due to lack of space.");
-        }
+        waitingTourists += boardingTourists;
 
         System.out.println("Spawned " + boardingTourists + " tourists (boarded). Gained $" + (boardingTourists * ticketPrice));
     }
@@ -604,5 +631,103 @@ public class Map {
         return -1;
     }
 
+    public void autoNumberRoadsFromEntrance() {
+        Point entrance = null;
 
+        // Step 1: find entrance
+        for (Object obj : objects) {
+            if (obj instanceof EntranceExitRoad road && road.isEntrance) {
+                entrance = road.getPos();
+                break;
+            }
+        }
+        if (entrance == null) {
+            System.out.println("Entrance not found.");
+            return;
+        }
+
+        // Step 2: reset all road numbers
+        for (Object obj : objects) {
+            if (obj instanceof Road road) {
+                road.roadNumber = -1;
+            }
+        }
+
+        // Step 3: BFS to number roads
+        Queue<Point> queue = new LinkedList<>();
+        Set<Point> visited = new HashSet<>();
+
+        queue.add(entrance);
+        visited.add(entrance);
+
+        int counter = 0;
+
+        while (!queue.isEmpty()) {
+            Point current = queue.poll();
+            Object obj = getObjectAt(current);
+            if (!(obj instanceof Road road)) continue;
+
+            road.roadNumber = counter++;
+
+            for (RoadDirection dir : road.direction) {
+                Point next = dir.move(current);
+                if (!visited.contains(next)) {
+                    Object nextObj = getObjectAt(next);
+                    if (nextObj instanceof Road || nextObj instanceof EntranceExitRoad) {
+                        visited.add(next);
+                        queue.add(next);
+                    }
+                }
+            }
+        }
+
+        // Step 4: reposition jeeps to match stored roadNumber
+        for (Entity entity : entities) {
+            if (entity instanceof Jeep jeep) {
+                for (Object obj : objects) {
+                    if (obj instanceof Road road && road.roadNumber == jeep.roadNumber) {
+                        jeep.setPos(road.getPos());
+                        break;
+                    }
+                }
+            }
+        }
+
+        System.out.println("Auto-numbered roads from entrance.");
+    }
+
+    public GameClock getGameClock() {
+        return gameClock;
+    }
+
+    public int getMaxRoadNumber() {
+        int max = -1;
+        for (Object obj : objects) {
+            if (obj instanceof Road road) {
+                max = Math.max(max, road.roadNumber);
+            }
+        }
+        return max;
+    }
+
+    public void completeJeepTour(Jeep jeep) {
+        double rating = jeep.endTour();
+        entities.remove(jeep);
+        availableJeeps.add(jeep);
+    }
+
+    public int getAvailableJeepCount() {
+        return availableJeeps.size();
+    }
+
+    public int getWaitingTouristCount() {
+        return waitingTourists;
+    }
+
+    public int getTouristCountOnTour() {
+        return entities.stream()
+            .filter(e -> e instanceof Jeep)
+            .mapToInt(e -> ((Jeep)e).getPassengerCount())
+            .sum();
+    }
 }

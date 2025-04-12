@@ -334,7 +334,7 @@ public abstract class Animal extends Entity {
         Point newPos = new Point(current.getX() + dx, current.getY() + dy);
 
         if (isValidMove(newPos, tiles)) {
-            this.mover = new Mover(current, newPos, 0.7f); // Move over 0.4 seconds
+            this.mover = new Mover(current, newPos, 1); // Move over 0.4 seconds
             this.setPos(newPos); // Update logical position
         }
     }

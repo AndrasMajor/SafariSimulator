@@ -173,8 +173,6 @@ public class ShopContainer extends Window {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 if(ShopContainer.this.mapScreen.map.buyEntity(new Jeep(new Point())) == 1){
-                    ShopContainer.this.remove();
-                    ShopContainer.this.mapScreen.stage.addActor(ShopContainer.this.mapScreen.shopButton);
                 }else{
                     ShopContainer.this.mapScreen.stage.addActor(insufficientFundsWindow);
                 }
@@ -237,8 +235,6 @@ public class ShopContainer extends Window {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 if(ShopContainer.this.mapScreen.map.buyEntity(new Elephant(new Point())) == 1){
-                    ShopContainer.this.remove();
-                    ShopContainer.this.mapScreen.stage.addActor(ShopContainer.this.mapScreen.shopButton);
                 }else{
                     ShopContainer.this.mapScreen.stage.addActor(insufficientFundsWindow);
                 }
@@ -248,8 +244,6 @@ public class ShopContainer extends Window {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 if(ShopContainer.this.mapScreen.map.buyEntity(new Zebra(new Point())) == 1){
-                    ShopContainer.this.remove();
-                    ShopContainer.this.mapScreen.stage.addActor(ShopContainer.this.mapScreen.shopButton);
                 }else{
                     ShopContainer.this.mapScreen.stage.addActor(insufficientFundsWindow);
                 }
@@ -259,8 +253,6 @@ public class ShopContainer extends Window {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 if(ShopContainer.this.mapScreen.map.buyEntity(new Hyena(new Point())) == 1){
-                    ShopContainer.this.remove();
-                    ShopContainer.this.mapScreen.stage.addActor(ShopContainer.this.mapScreen.shopButton);
                 }else{
                     ShopContainer.this.mapScreen.stage.addActor(insufficientFundsWindow);
                 }
@@ -270,8 +262,6 @@ public class ShopContainer extends Window {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 if(ShopContainer.this.mapScreen.map.buyEntity(new Lion(new Point())) == 1){
-                    ShopContainer.this.remove();
-                    ShopContainer.this.mapScreen.stage.addActor(ShopContainer.this.mapScreen.shopButton);
                 }else{
                     ShopContainer.this.mapScreen.stage.addActor(insufficientFundsWindow);
                 }

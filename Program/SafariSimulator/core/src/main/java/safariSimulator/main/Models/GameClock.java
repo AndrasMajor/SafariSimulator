@@ -76,4 +76,18 @@ public class GameClock {
     public Duration getIncrementPerTick() {
         return incrementPerTick;
     }
+
+    public float getTimeSpeedMultiplier() {
+        long hours = incrementPerTick.toHours();
+        if (hours == 0) return 1f; // fallback
+        return (float) hours;
+    }
+
+    public float getSecondsPerTick() {
+        Duration d = getIncrementPerTick();
+        return d.getSeconds() + d.getNano() / 1_000_000_000f;
+    }
+
+
+
 }

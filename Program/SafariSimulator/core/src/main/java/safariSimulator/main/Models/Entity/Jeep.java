@@ -20,6 +20,7 @@ public class Jeep extends Entity {
     private double rating; // Average rating of this tour
     private int passengerCount = 0;
     private Point previousPos;
+    public int roadNumber;
 
     public Jeep(Point pos) {
         super(pos);
@@ -75,24 +76,35 @@ public class Jeep extends Entity {
         }
         return count;
     }
-
+    /**
+     * Moves the Jeep to the next road if available.
+     * If there are animals in sight, it will not move.
+     */
     public void move(Map map) {
+        if (this.isMoving()) return;
+
+        this.roadNumber = map.findRoadNumber(this.pos); // keep in sync
+        // Check end of tour first
+        if (map.findRoadNumber(this.pos) == map.getMaxRoadNumber()) {
+            map.completeJeepTour(this);
+            return;
+        }
+
         int animalsInRange = getNumberOfAnimalsInSight(map);
-        if (animalsInRange > 0 && passengerCount > 0) {
-            if (rating < 5) {
-                rating += (0.1 * animalsInRange) / (impressLevel + 1); // avoid div by 0
-                rating = Math.min(5, rating); // Clamp
-            }
+        if (animalsInRange > 0 && passengerCount > 0 && rating < 5) {
+            rating += (0.5 * animalsInRange) / (impressLevel + 1);
+            rating = Math.min(5, rating);
         } else {
             pos_change(map);
         }
     }
 
+
     public void pos_change(Map map) {
         Point nextRoad = searchForNextRoad(map);
-        if (nextRoad != null) {
+        if (nextRoad != null && !nextRoad.equals(this.pos)) {
             this.previousPos = this.pos;
-            this.setPos(nextRoad);
+            this.setPos(nextRoad); // Triggers mover animation
         }
     }
 
