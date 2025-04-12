@@ -20,38 +20,46 @@ public class MapSummaryView extends Table {
     public MapSummaryView(Skin skin, Map map) {
         super(skin);
         this.map = map;
+        setBackground(skin.newDrawable("white", 0, 0, 0, 0.6f));
+        pad(10);
+        left().top();
 
-        setBackground(skin.newDrawable("white", 0, 0, 0, 0.5f));
-        pad(8);
-        bottom().left();
+        // Címsor stílus
+        Label.LabelStyle headerStyle = new Label.LabelStyle(skin.get(Label.LabelStyle.class));
+        headerStyle.font = skin.getFont("default-font"); // vagy amit használsz
+        headerStyle.font.getData().setScale(1.1f); // nagyobb méret
+        Label animalHeader = new Label("Animals", headerStyle);
+        Label jeepHeader = new Label("Jeeps", headerStyle);
+        Label touristHeader = new Label("Tourists", headerStyle);
 
+        // Inicializáció
         lionLabel = new Label("", skin);
         zebraLabel = new Label("", skin);
         elephantLabel = new Label("", skin);
         hyenaLabel = new Label("", skin);
-
         jeepActiveLabel = new Label("", skin);
         jeepAvailableLabel = new Label("", skin);
-
         touristsWaitingLabel = new Label("", skin);
         touristsTouringLabel = new Label("", skin);
 
-        add(new Label("Animals:", skin)).left().row();
-        add(lionLabel).left().row();
-        add(zebraLabel).left().row();
-        add(elephantLabel).left().row();
-        add(hyenaLabel).left().padBottom(5).row();
+        // Layout
+        add(animalHeader).left().padBottom(5).row();
+        add(lionLabel).left().padLeft(10).row();
+        add(zebraLabel).left().padLeft(10).row();
+        add(elephantLabel).left().padLeft(10).row();
+        add(hyenaLabel).left().padLeft(10).padBottom(10).row();
 
-        add(new Label("Jeeps:", skin)).left().row();
-        add(jeepActiveLabel).left().row();
-        add(jeepAvailableLabel).left().padBottom(5).row();
+        add(jeepHeader).left().padBottom(5).row();
+        add(jeepActiveLabel).left().padLeft(10).row();
+        add(jeepAvailableLabel).left().padLeft(10).padBottom(10).row();
 
-        add(new Label("Tourists:", skin)).left().row();
-        add(touristsTouringLabel).left().row();
-        add(touristsWaitingLabel).left().row();
+        add(touristHeader).left().padBottom(5).row();
+        add(touristsTouringLabel).left().padLeft(10).row();
+        add(touristsWaitingLabel).left().padLeft(10).row();
 
         pack();
     }
+
 
     public void update() {
         long lions = map.getEntities().stream().filter(e -> e instanceof Lion).count();
@@ -73,5 +81,7 @@ public class MapSummaryView extends Table {
 
         touristsTouringLabel.setText("Touring: " + touristsTouring);
         touristsWaitingLabel.setText("Waiting: " + touristsWaiting);
+
+        pack();
     }
 }

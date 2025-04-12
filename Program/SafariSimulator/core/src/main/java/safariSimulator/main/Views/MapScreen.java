@@ -195,22 +195,6 @@ public class MapScreen extends InputAdapter implements Screen {
         topBar.setFillParent(true);
         topBar.top();
 
-
-
-
-        /*buttons*//*
-        shopButton.getLabel().setFontScale(1.2f);
-        shopButton.pad(10);
-        exitButton.getLabel().setFontScale(1.2f);
-        exitButton.pad(10);
-        pauseButton.getLabel().setFontScale(1.2f);
-        pauseButton.pad(10);
-        speedButton.getLabel().setFontScale(1.2f);
-        speedButton.pad(10);
-        roadModeToggle.getLabel().setFontScale(1.2f);
-        roadModeToggle.pad(10);*/
-
-
         roadModeToggle = new TextButton("Build Mode", skin);
         roadModeToggle.setVisible(false);
         stage.addActor(roadModeToggle);
@@ -233,7 +217,7 @@ public class MapScreen extends InputAdapter implements Screen {
         });
 
 
-        pauseButton = new TextButton("Pause", skin);
+        pauseButton = new TextButton("Play", skin);
         pauseButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -255,7 +239,7 @@ public class MapScreen extends InputAdapter implements Screen {
             }
         });
 
-        speedButton = new TextButton("~>", skin);
+        speedButton = new TextButton("Hour", skin);
         speedButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -263,15 +247,15 @@ public class MapScreen extends InputAdapter implements Screen {
                 switch (speedState) {
                     case 0:
                         map.setSpeedToHourPerSecond();
-                        speedButton.setText("~>");
+                        speedButton.setText("Hours");
                         break;
                     case 1:
                         map.setSpeedToDayPerSecond();
-                        speedButton.setText("~>>");
+                        speedButton.setText("Days");
                         break;
                     case 2:
                         map.setSpeedToWeekPerSecond();
-                        speedButton.setText("~>>>");
+                        speedButton.setText("Weeks");
                         break;
                 }
             }
@@ -280,7 +264,7 @@ public class MapScreen extends InputAdapter implements Screen {
         dateLabel = new Label("", skin);
         dateLabel.setAlignment(Align.center);
 
-        topBar.add(pauseButton).pad(10).width(50).height(50);
+        topBar.add(pauseButton).pad(10).width(80).height(50);
         topBar.add(dateLabel).pad(10).width(300).height(50);
         topBar.add(speedButton).pad(10).width(80).height(50);
 
@@ -294,17 +278,14 @@ public class MapScreen extends InputAdapter implements Screen {
 
 
 
-        // Money label jobb alsó sarokban
-        // Egyedi stílus létrehozása
+        // Money label
         BitmapFont moneyFont = new BitmapFont();
-        moneyFont.getData().setScale(2f); // nagyobb szöveg
+        moneyFont.getData().setScale(2f);
         moneyFont.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
 
         Label.LabelStyle moneyStyle = new Label.LabelStyle();
         moneyStyle.font = moneyFont;
         moneyStyle.fontColor = com.badlogic.gdx.graphics.Color.GOLD;
-
-        // Háttér hozzáadása (fekete átlátszatlan)
 
         Drawable background = new TextureRegionDrawable(new TextureRegion(bgTexture));
         moneyStyle.background = background;
@@ -323,13 +304,14 @@ public class MapScreen extends InputAdapter implements Screen {
         summaryView.setPosition(10, 10); // Bottom-left
         stage.addActor(summaryView);
 
-        toggleSummaryButton = new TextButton("📊", skin);
-        toggleSummaryButton.setSize(40, 40);
-        toggleSummaryButton.setPosition(10, summaryView.getHeight() + 20);
+        toggleSummaryButton = new TextButton("Hide Summary", skin);
+        toggleSummaryButton.setSize(130, 45);
+        toggleSummaryButton.setPosition(10, summaryView.getY() + summaryView.getHeight() + 10);
         toggleSummaryButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 summaryVisible = !summaryVisible;
+                toggleSummaryButton.setText(summaryVisible ? "Hide Summary" : "Show Summary");
                 summaryView.setVisible(summaryVisible);
             }
         });
@@ -387,56 +369,13 @@ public class MapScreen extends InputAdapter implements Screen {
         batch.setShader(null);
         batch.begin();
 
-// === Updated animal/entity rendering with rotation and scaling ===
-        /*for (Entity entity : map.getEntities()) {
-            if (entity instanceof Animal animal && animal.isAlive()) {
-                if (animal.mover != null && !animal.mover.isComplete()) {
-                    animal.mover.update(delta);
-                }
-
-                float x = (animal.mover != null) ? animal.mover.getInterpolatedX() : animal.getPos().getX();
-                float y = (animal.mover != null) ? animal.mover.getInterpolatedY() : animal.getPos().getY();
-                float drawX = x * TILE_SIZE;
-                float drawY = y * TILE_SIZE;
-
-                float scale = animal.getScale();
-                float scaledSize = TILE_SIZE * scale;
-
-                float rotation = 90f; // Default north
-                if (animal.mover != null && !animal.mover.isComplete()) {
-                    rotation = animal.mover.getAngleDeg() - 90f; // FIXED: adjust so north=default
-                }
-
-                Texture texture = getTextureFor(animal);
-
-                batch.draw(
-                    texture,
-                    drawX + 16 - scaledSize / 2f,
-                    drawY + 16 - scaledSize / 2f,
-                    scaledSize / 2f, scaledSize / 2f,
-                    scaledSize, scaledSize,
-                    1f, 1f,
-                    rotation,
-                    0, 0,
-                    texture.getWidth(), texture.getHeight(),
-                    false, false
-                );
-            } else {
-                float drawX = entity.getPos().getX() * TILE_SIZE;
-                float drawY = entity.getPos().getY() * TILE_SIZE;
-                batch.draw(getTextureFor(entity), drawX, drawY, TILE_SIZE, TILE_SIZE);
-            }
-        }*/
-
-
-
         for (Object object : map.getObjects()) {
             Texture objectTexture = null;
             Point pos = object.getPos();
 
             if (object instanceof EntranceExitRoad) {
                 EntranceExitRoad road = (EntranceExitRoad) object;
-                //System.out.println((road.isEntrance ? "Entrance" : "Exit") + " at: " + pos.getX() + "," + pos.getY());
+                System.out.println((road.isEntrance ? "Entrance" : "Exit") + " at: " + pos.getX() + "," + pos.getY());
                 objectTexture = road.isEntrance ? entranceRoadTexture : exitRoadTexture;
             } else if (object instanceof Plant) {
                 if (((Plant) object).type == PlantType.Tree) objectTexture = treeTexture;
