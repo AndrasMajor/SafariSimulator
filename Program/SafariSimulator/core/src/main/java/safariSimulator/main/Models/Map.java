@@ -39,6 +39,8 @@ public class Map {
     public int grassPrice = 30;
     public int waterPrice = 30;
     private int totalTouristsThisWeek = 0;
+    public boolean won = false;
+    public boolean lost = false;
 
 
     // tourist based vars
@@ -77,7 +79,7 @@ public class Map {
         tiles = new ArrayList<>();
         objects = new ArrayList<>();
         entities = new ArrayList<>();
-        money = 1000000000;
+        money = 31000;
         this.level = level;
         gameClock = new GameClock(LocalDateTime.now());
         initScheduler();
@@ -855,5 +857,24 @@ public class Map {
 
     public float getTotalTouristsThisWeek() {
         return totalTouristsThisWeek;
+    }
+
+    public int isPlayerWinning() {
+        switch (level) {
+            case "easy":
+                if (money >= 10000) return 1;
+                else if (money <= 0) return -1;
+                else return 0;
+            case "medium":
+                if (money >= 20000) return 1;
+                else if (money <= 0) return -1;
+                else return 0;
+            case "hard":
+                if (money >= 30000) return 1;
+                else if (money <= 0) return -1;
+                else return 0;
+            default:
+                return 0;
+        }
     }
 }
