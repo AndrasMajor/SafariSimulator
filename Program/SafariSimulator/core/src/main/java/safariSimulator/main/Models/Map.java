@@ -2,6 +2,10 @@ package safariSimulator.main.Models;
 
 import safariSimulator.main.Database.MapState;
 import safariSimulator.main.Models.Entity.Animal.Animal;
+import safariSimulator.main.Models.Entity.Animal.Carnivore.Hyena;
+import safariSimulator.main.Models.Entity.Animal.Carnivore.Lion;
+import safariSimulator.main.Models.Entity.Animal.Herbivore.Elephant;
+import safariSimulator.main.Models.Entity.Animal.Herbivore.Zebra;
 import safariSimulator.main.Models.Entity.Entity;
 import safariSimulator.main.Models.Entity.Human.Keeper;
 import safariSimulator.main.Models.Entity.Human.Poacher;
@@ -331,9 +335,9 @@ public class Map {
         }
     }
 
-    public void sellEntity(Animal animal) {
-        this.entities.remove(animal);
-        this.money += animal.price;
+    public void sellEntity(Entity entity) {
+        this.entities.remove(entity);
+        this.money += entity.price;
     }
 
     public void sellObject(Object object) {
@@ -400,12 +404,22 @@ public class Map {
 
 
     private void moveEntitiesOnce() {
+        Point zebraPos = null;
+        Point lionPos = null;
+        Point elephantPos = null;
+        Point hyenaPos = null;
+
         for (Entity entity : new ArrayList<>(entities)) {
             if (entity instanceof Animal animal) {
                 setLeader(); // group sync
                 animal.move(this);
                 if (!animal.isAlive()) {
                     entities.remove(animal);
+                }else {
+                    if (animal instanceof Zebra) zebraPos = animal.getPos();
+                    else if (animal instanceof Lion) lionPos = animal.getPos();
+                    else if (animal instanceof Elephant) elephantPos = animal.getPos();
+                    else if (animal instanceof Hyena) hyenaPos = animal.getPos();
                 }
             } else if (entity instanceof Jeep jeep) {
                 jeep.move(this);
@@ -432,6 +446,23 @@ public class Map {
         }
 
         checkLaunchJeep();
+
+        boolean[] breedable = breed(); // zebra, lion, elephant, hyena
+        Random rand = new Random();
+
+        if (breedable[0] && zebraPos != null && rand.nextDouble() < 0.1) {
+            entities.add(new Zebra(new Point(zebraPos.getX(), zebraPos.getY())));
+        }
+        if (breedable[1] && lionPos != null && rand.nextDouble() < 0.1) {
+            entities.add(new Lion(new Point(lionPos.getX(), lionPos.getY())));
+        }
+        if (breedable[2] && elephantPos != null && rand.nextDouble() < 0.1) {
+            entities.add(new Elephant(new Point(elephantPos.getX(), elephantPos.getY())));
+        }
+        if (breedable[3] && hyenaPos != null && rand.nextDouble() < 0.1) {
+            entities.add(new Hyena(new Point(hyenaPos.getX(), hyenaPos.getY())));
+        }
+
     }
 
     private boolean shouldSpawnPoacher() {
@@ -788,6 +819,36 @@ public class Map {
         }
         return poacher;
     }
+
+    public boolean[] breed() {
+        int zebraCount = 0;
+        int lionCount = 0;
+        int elephantCount = 0;
+        int hyenaCount = 0;
+
+        for (Entity e : entities) {
+            if(e instanceof Animal) {
+                int age = ((Animal) e).getAge();
+                int maxAge = ((Animal) e).getMaxAge();
+
+                if (age >= maxAge / 2) {
+                    if (e instanceof Zebra) zebraCount++;
+                    else if (e instanceof Lion) lionCount++;
+                    else if (e instanceof Elephant) elephantCount++;
+                    else if (e instanceof Hyena) hyenaCount++;
+                }
+            }
+
+        }
+
+        boolean zebraBreedable = zebraCount >= 2;
+        boolean lionBreedable = lionCount >= 2;
+        boolean elephantBreedable = elephantCount >= 2;
+        boolean hyenaBreedable = hyenaCount >= 2;
+
+        return new boolean[] { zebraBreedable, lionBreedable, elephantBreedable, hyenaBreedable };
+    }
+
 
 
 }

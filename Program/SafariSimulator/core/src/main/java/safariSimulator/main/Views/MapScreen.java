@@ -152,7 +152,7 @@ public class MapScreen extends InputAdapter implements Screen {
         pixelTexture = new Texture(redPixel);
         redPixel.dispose();
 
-// Second Pixmap for money label background
+        // Second Pixmap for money label background
         Pixmap moneyBg = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
         moneyBg.setColor(0, 0, 0, 0.7f);
         moneyBg.fill();
@@ -564,12 +564,26 @@ public class MapScreen extends InputAdapter implements Screen {
 
         if (map.isPaused()) {
             Object obj = map.getObjects().stream().filter(o -> o.getPos().getX() == pos.getX() && o.getPos().getY() == pos.getY()).findFirst().orElse(null);
+            Entity entity = map.getEntities().stream().filter(e -> e.getPos().getX() == pos.getX() && e.getPos().getY() == pos.getY()).findFirst().orElse(null);
 
             if (roadModeToggle.getText().toString().equals("Sell Mode")) {
                 if (obj instanceof SellableRoad road) {
                     map.sellObject(road);
                     return true;
+                }else if(obj instanceof Plant plant){
+                    map.sellObject(plant);
+                    return true;
+                }else if(entity instanceof Animal animal){
+                    map.sellEntity(animal);
+                    return true;
+                }else if(entity instanceof Jeep jeep){
+                    map.sellEntity(jeep);
+                    return true;
+                }else if(entity instanceof Keeper keeper){
+                    map.sellEntity(keeper);
+                    return true;
                 }
+
             } else if (roadModeToggle.getText().toString().equals("Build Mode") && clickedTile != null && clickedTile.getHealth() >= 0) {
                 if (obj instanceof SellableRoad) {
                     // rotate road
