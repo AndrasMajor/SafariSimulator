@@ -15,6 +15,7 @@ public class Poacher extends Human {
     public Point startPont;
     public Animal target;
     public Point targetPoint;
+    public Animal capturedAnimal;
 
     public Poacher(Map map, Point startPoint) {
         super(startPoint);
@@ -42,6 +43,7 @@ public class Poacher extends Human {
             this.pos.getX() == target.getPos().getX() &&
             this.pos.getY() == target.getPos().getY()
         ) {
+            this.capturedAnimal = target;
             map.entities.remove(target);
             targetPoint = startPont;
             target = null;

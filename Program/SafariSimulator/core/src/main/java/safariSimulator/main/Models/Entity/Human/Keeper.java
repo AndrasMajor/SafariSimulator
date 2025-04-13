@@ -36,7 +36,7 @@ public class Keeper extends Human {
         this.targetPoint = targetTile.pos;
     }
 
-    private boolean isPoacherInRange(List<Entity> entities) {
+    public boolean isPoacherInRange(List<Entity> entities) {
         for(Entity entity : entities) {
             if (entity instanceof Poacher) {
                 if (Math.abs(entity.pos.getX() - this.pos.getX()) <= viewRange &&
@@ -62,6 +62,7 @@ public class Keeper extends Human {
 
     public boolean isPoacherInShootingRange(List<Entity> entites) {
         Poacher poacher = getPoacher(entites);
+        if (poacher == null) return false;
         if (Math.abs(poacher.pos.getX() - this.pos.getX()) <= 2 &&
             Math.abs(poacher.pos.getY() - this.pos.getY()) <= 2
         ) {
