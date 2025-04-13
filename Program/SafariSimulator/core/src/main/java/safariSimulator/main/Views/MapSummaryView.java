@@ -2,6 +2,7 @@ package safariSimulator.main.Views;
 
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.*;
+import safariSimulator.main.Models.Entity.Human.Keeper;
 import safariSimulator.main.Models.Map;
 import safariSimulator.main.Models.Entity.*;
 import safariSimulator.main.Models.Entity.Animal.*;
@@ -16,6 +17,7 @@ public class MapSummaryView extends Table {
     private final Label lionLabel, zebraLabel, elephantLabel, hyenaLabel;
     private final Label jeepActiveLabel, jeepAvailableLabel;
     private final Label touristsWaitingLabel, touristsTouringLabel;
+    private final Label keeperLabel;
 
     public MapSummaryView(Skin skin, Map map) {
         super(skin);
@@ -31,6 +33,7 @@ public class MapSummaryView extends Table {
         Label animalHeader = new Label("Animals", headerStyle);
         Label jeepHeader = new Label("Jeeps", headerStyle);
         Label touristHeader = new Label("Tourists", headerStyle);
+        Label keeperHeader = new Label("Keepers", headerStyle);
 
         // Inicializáció
         lionLabel = new Label("", skin);
@@ -41,6 +44,7 @@ public class MapSummaryView extends Table {
         jeepAvailableLabel = new Label("", skin);
         touristsWaitingLabel = new Label("", skin);
         touristsTouringLabel = new Label("", skin);
+        keeperLabel = new Label("", skin);
 
         // Layout
         add(animalHeader).left().padBottom(5).row();
@@ -57,6 +61,9 @@ public class MapSummaryView extends Table {
         add(touristsTouringLabel).left().padLeft(10).row();
         add(touristsWaitingLabel).left().padLeft(10).row();
 
+        add(keeperHeader).left().padBottom(5).row();
+        add(keeperLabel).left().padLeft(10).row();
+
         pack();
     }
 
@@ -70,6 +77,7 @@ public class MapSummaryView extends Table {
         long jeepsAvailable = map.getAvailableJeepCount();
         int touristsWaiting = map.getWaitingTouristCount();
         int touristsTouring = map.getTouristCountOnTour();
+        long keepers = map.getEntities().stream().filter(e -> e instanceof Keeper).count();
 
         lionLabel.setText("Lions: " + lions);
         zebraLabel.setText("Zebras: " + zebras);
@@ -81,6 +89,8 @@ public class MapSummaryView extends Table {
 
         touristsTouringLabel.setText("Touring: " + touristsTouring);
         touristsWaitingLabel.setText("Waiting: " + touristsWaiting);
+
+        keeperLabel.setText("Keepers: " + keepers);
 
         pack();
     }

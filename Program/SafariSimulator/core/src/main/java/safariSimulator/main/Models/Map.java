@@ -427,16 +427,24 @@ public class Map {
                 boolean success = poacher.move(this);
                 if (success) break;
             } else if (entity instanceof Keeper keeper) {
-                if ((keeper.targetPoint.getX() == 0 && keeper.targetPoint.getY() == 0 ) || (keeper.pos.getX() == keeper.targetPoint.getX() && keeper.pos.getY() == keeper.targetPoint.getY())) {
+                if (keeper.isPoacherInRange(this.entities)||(keeper.targetPoint.getX() == 0 && keeper.targetPoint.getY() == 0 ) || (keeper.pos.getX() == keeper.targetPoint.getX() && keeper.pos.getY() == keeper.targetPoint.getY())) {
                     keeper.chooseTargetPoint(this.tiles, this.entities);
                 }
                 keeper.move(this);
                 this.money -= keeper.price;
-                //if (keeper.isPoacherInShootingRange(this.entities)) {
-                //    if (keeper.keeperWonInFight()) entities.remove(getPoacher());
-                //    else entities.remove(keeper);
-                //    break;
-                //}
+                if (keeper.isPoacherInShootingRange(this.entities)) {
+                    if (keeper.keeperWonInFight()) {
+                        Poacher poacher = getPoacher();
+                        if (poacher.capturedAnimal != null) {
+                            poacher.capturedAnimal.pos.setX(poacher.pos.getX());
+                            poacher.capturedAnimal.pos.setY(poacher.pos.getY());
+                            entities.add(poacher.capturedAnimal);
+                        }
+                        entities.remove(poacher);
+                    }
+                    else entities.remove(keeper);
+                    break;
+                }
 
             }
         }
@@ -809,7 +817,7 @@ public class Map {
         return lowerPrice && ticketPriceLevel > 1;
     }
 
-    private Poacher getPoacher() {
+    public Poacher getPoacher() {
         Poacher poacher = null;
         for(Entity entity : entities) {
             if (entity instanceof Poacher) {
