@@ -17,11 +17,9 @@ import safariSimulator.main.Models.Objects.Plant;
 import safariSimulator.main.Models.Objects.PlantType;
 import safariSimulator.main.Models.Tile.Tile;
 import safariSimulator.main.Models.Objects.Object;
-import safariSimulator.main.Models.GameClock;
 import safariSimulator.main.Models.Objects.Road;
 import safariSimulator.main.Models.Objects.RoadDirection;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.Executors;
@@ -40,19 +38,26 @@ public class Map {
     private ScheduledExecutorService scheduler;
     public int grassPrice = 30;
     public int waterPrice = 30;
+    private int totalTouristsThisWeek = 0;
+
 
     // tourist based vars
-    private int waitingTourists = 0;
+    private static final double DEFAULT_RATING = 2.5;
     private List<Jeep> availableJeeps = new ArrayList<>();
-    private LocalDateTime lastJeepStartTime = null;
     private List<Double> weeklyRatings = new ArrayList<>();
     private int ticketPriceLevel = 1; // 1: 20, 2: 40, 3: 80, 4: 160
     private boolean raisePrice = false;
     private boolean lowerPrice = false;
     private int touristWeekCounter = 0;
-    private int totalTouristsLastMonth = 0;
     private Random random = new Random();
     private long totalGameHours = 0; // Accumulates in-game hours
+    private final List<Tourist> waitingTouristList = new ArrayList<>();
+    private int nextTouristId = 0;
+    private final List<Double> currentWeekRatings = new ArrayList<>();
+    private double cumulativeRating = 2.5;
+    private int ratingCount = 1;
+
+
 
 
 
@@ -205,6 +210,11 @@ public class Map {
             handleTouristWeek();
         }
 
+        if (totalGameHours % 24 == 0) {
+            spawnTouristsForDay();
+        }
+
+
         // Move all entities once per hour
         moveEntitiesOnce();
 
@@ -214,7 +224,39 @@ public class Map {
                 lastJeepLaunchGameHours = totalGameHours;
             }
         }
+
+        Iterator<Tourist> iterator = waitingTouristList.iterator();
+        while (iterator.hasNext()) {
+            Tourist tourist = iterator.next();
+            tourist.waitHours++;
+            if (tourist.waitHours >= 168) {
+                currentWeekRatings.add(0.0); // dropped with 0 rating
+                iterator.remove();
+            }
+        }
+
     }
+
+
+    private void spawnTouristsForDay() {
+        double avg = ratingCount > 0 ? cumulativeRating / ratingCount : 2.5;
+
+        int baseMin = 1 + (int)(avg * 1.5);  // e.g., 1–9
+        int baseMax = 3 + (int)(avg * 2.0);  // e.g., 3–13
+        int arriving = baseMin + random.nextInt(baseMax - baseMin + 1);
+
+        for (int i = 0; i < arriving; i++) {
+            waitingTouristList.add(new Tourist(nextTouristId++));
+            totalTouristsThisWeek++;
+        }
+
+        System.out.println("New tourists today: " + arriving + " (Avg rating: " + avg + ")");
+    }
+
+    public double getCurrentAverageRating() {
+        return ratingCount > 0 ? cumulativeRating / ratingCount : 0.0;
+    }
+
 
 
 
@@ -255,16 +297,9 @@ public class Map {
     // -------------------------------------
 
     // SETTERS -----------------------------
-    public void setTiles(List<Tile> tiles) {
-        this.tiles = tiles;
-    }
 
     public void setObjects(List<Object> objects) {
         this.objects = objects;
-    }
-
-    public void setEntities(List<Entity> entities) {
-        this.entities = entities;
     }
 
     //--------------------------------------
@@ -495,12 +530,18 @@ public class Map {
 
 
     private boolean checkLaunchJeep() {
-        if (waitingTourists <= 0 || availableJeeps.isEmpty()) return false;
+        if (waitingTouristList.size() <= 0 || availableJeeps.isEmpty()) return false;
 
         Jeep jeep = availableJeeps.remove(0);
-        int toBoard = Math.min(4, waitingTourists);
+        int toBoard = Math.min(4, waitingTouristList.size());
         jeep.startTour(ticketPriceLevel, toBoard);
-        waitingTourists -= toBoard;
+        for (int i = 0; i < toBoard && !waitingTouristList.isEmpty(); i++) {
+            waitingTouristList.remove(0);
+        }
+        for (int i = 0; i < toBoard && !waitingTouristList.isEmpty(); i++) {
+            waitingTouristList.remove(0);
+        }
+
 
         Point entrance = getEntrancePosition();
         if (entrance != null) {
@@ -512,28 +553,6 @@ public class Map {
         return true;
     }
 
-
-
-    private boolean addPoacher() {
-        for (Entity entity : entities) {
-            if (entity instanceof Poacher) {
-                return true;
-            }
-        }
-        int animalCount = (int) entities.stream().filter(e -> e instanceof Animal && ((Animal) e).isAlive()).count();
-        if (animalCount == 0) return false;
-
-        double baseChance = 1;
-        double maxChance = 1;
-        double spawnChance = Math.min(animalCount / 10.0 * baseChance, maxChance);
-
-        Random random = new Random();
-        if (random.nextDouble() < spawnChance) {
-            entities.add(new Poacher(this, setStartPointForPoacher(this.getTiles())));
-            return true;
-        }
-        return false;
-    }
 
     private Point setStartPointForPoacher(List<Tile> tiles) {
         Tile startTile;
@@ -575,10 +594,6 @@ public class Map {
         gameClock.setSpeedToWeekPerSecond();
     }
 
-    public void resetClockSpeed() {
-        gameClock.resetSpeed();
-    }
-    // -------------------------------------
 
     private Animal selectLeader(Animal animal) {
         Animal oldest = null;
@@ -616,90 +631,27 @@ public class Map {
     // Tourist logic
 
     private void handleTouristWeek() {
-        int totalTouristCount = 0;
-        double totalWeightedRating = 0;
-        // Account for any leftover tourists who never got on a jeep
-        if (waitingTourists > 0) {
-            totalWeightedRating += 0.0 * waitingTourists; // rating 0.0
-            totalTouristCount += waitingTourists;
-            waitingTourists = 0;
-        }
+        double averageRating = currentWeekRatings.isEmpty() ? DEFAULT_RATING :
+            currentWeekRatings.stream().mapToDouble(r -> r).average().orElse(DEFAULT_RATING);
 
-        // Compute average
-        double averageRating = totalTouristCount > 0 ? totalWeightedRating / totalTouristCount : 2.5;
-        if (totalTouristCount > 0) {
-            weeklyRatings.add(averageRating);
-            totalTouristsLastMonth += totalTouristCount;
-        }
+        weeklyRatings.add(averageRating);
+        currentWeekRatings.clear();
 
-        System.out.println("Average tourist rating this week: " + averageRating);
-
-        // Check monthly adjustments
-        touristWeekCounter++;
-        if (touristWeekCounter >= 4) {
-            touristWeekCounter = 0;
-
-            if (totalTouristsLastMonth >= (30 * ticketPriceLevel) && averageRating >= 3.5) {
-                raisePrice = true;
-            } else {
-                raisePrice = false;
-            }
-
-            lowerPrice = averageRating < 2.5;
-
-            totalTouristsLastMonth = 0;
-            weeklyRatings.clear();
-        }
-
-        // Spawn next week's tourists
-        spawnTouristsForWeek(averageRating);
-    }
-
-
-    private void spawnTouristsForWeek(double lastWeekAvgRating) {
-        int baseMin = 5 + ticketPriceLevel * 2;
-        int baseMax = 10 + ticketPriceLevel * 3;
-
-        int number = (int) (baseMin + (lastWeekAvgRating / 5.0) * (baseMax - baseMin));
-        number = Math.max(baseMin, Math.min(number, baseMax));
-
-        int jeepCount = (int) entities.stream().filter(e -> e instanceof Jeep).count() + availableJeeps.size();
-        int jeepCapacity = jeepCount * 4;
-        int boardingTourists = Math.min(number, jeepCapacity);
-
-        int ticketPrice = switch (ticketPriceLevel) {
-            case 1 -> 20;
-            case 2 -> 40;
-            case 3 -> 80;
-            case 4 -> 160;
-            default -> 20;
-        };
-
-        money += boardingTourists * ticketPrice;
-
-        waitingTourists += boardingTourists;
-
-        System.out.println("Spawned " + boardingTourists + " tourists (boarded). Gained $" + (boardingTourists * ticketPrice));
-    }
-
-
-    public void increaseTicketPrice() {
-        if (raisePrice && ticketPriceLevel < 4) {
-            ticketPriceLevel++;
+        if (totalTouristsThisWeek >= (30 * ticketPriceLevel) && averageRating >= 3.5) {
+            raisePrice = true;
+        } else {
             raisePrice = false;
-            lowerPrice = false;
-            System.out.println("Ticket price increased to level " + ticketPriceLevel);
         }
+
+        lowerPrice = averageRating < 2.5;
+        totalTouristsThisWeek = 0; // ✅ Reset weekly count
+
+        System.out.println("Weekly average rating: " + averageRating);
     }
 
-    public void decreaseTicketPrice() {
-        if (lowerPrice && ticketPriceLevel > 1) {
-            ticketPriceLevel--;
-            raisePrice = false;
-            lowerPrice = false;
-            System.out.println("Ticket price decreased to level " + ticketPriceLevel);
-        }
-    }
+
+
+
 
     public int findRoadNumber(Point pos)
     {
@@ -792,18 +744,43 @@ public class Map {
         return max;
     }
 
-    public void completeJeepTour(Jeep jeep) {
-        double rating = jeep.endTour();
-        entities.remove(jeep);
-        availableJeeps.add(jeep);
+    public void increaseTicketPrice() {
+        if (raisePrice && ticketPriceLevel < 4) {
+            ticketPriceLevel++;
+            raisePrice = false;
+            lowerPrice = false;
+
+            // ✅ Reset average tracking
+            cumulativeRating = DEFAULT_RATING;
+            ratingCount = 1;
+
+            System.out.println("Ticket price increased to level " + ticketPriceLevel);
+        }
     }
+
+    public void decreaseTicketPrice() {
+        if (lowerPrice && ticketPriceLevel > 1) {
+            ticketPriceLevel--;
+            raisePrice = false;
+            lowerPrice = false;
+
+            // ✅ Reset average tracking
+            cumulativeRating = DEFAULT_RATING;
+            ratingCount = 1;
+
+            System.out.println("Ticket price decreased to level " + ticketPriceLevel);
+        }
+    }
+
+
+
 
     public int getAvailableJeepCount() {
         return availableJeeps.size();
     }
 
     public int getWaitingTouristCount() {
-        return waitingTourists;
+        return waitingTouristList.size();
     }
 
     public int getTouristCountOnTour() {
@@ -820,6 +797,20 @@ public class Map {
     public boolean canDecreaseTicketPrice() {
         return lowerPrice && ticketPriceLevel > 1;
     }
+
+    public void completeJeepTour(Jeep jeep) {
+        double rating = jeep.endTour(); // Calculates rating based on tour experience
+        entities.remove(jeep);
+        availableJeeps.add(jeep);
+
+        // Track rating
+        currentWeekRatings.add(rating);
+        cumulativeRating += rating;
+        ratingCount++;
+
+        System.out.println("Tour ended. Rating: " + String.format("%.2f", rating));
+    }
+
 
     public Poacher getPoacher() {
         Poacher poacher = null;
@@ -862,5 +853,7 @@ public class Map {
     }
 
 
-
+    public float getTotalTouristsThisWeek() {
+        return totalTouristsThisWeek;
+    }
 }

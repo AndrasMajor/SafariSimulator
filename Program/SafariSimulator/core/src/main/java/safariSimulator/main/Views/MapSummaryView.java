@@ -18,6 +18,9 @@ public class MapSummaryView extends Table {
     private final Label jeepActiveLabel, jeepAvailableLabel;
     private final Label touristsWaitingLabel, touristsTouringLabel;
     private final Label keeperLabel;
+    private final Label ratingLabel;
+    private final Label weeklyTouristLabel;
+
 
     public MapSummaryView(Skin skin, Map map) {
         super(skin);
@@ -45,6 +48,9 @@ public class MapSummaryView extends Table {
         touristsWaitingLabel = new Label("", skin);
         touristsTouringLabel = new Label("", skin);
         keeperLabel = new Label("", skin);
+        ratingLabel = new Label("", skin);
+        weeklyTouristLabel = new Label("", skin);
+
 
         // Layout
         add(animalHeader).left().padBottom(5).row();
@@ -63,6 +69,11 @@ public class MapSummaryView extends Table {
 
         add(keeperHeader).left().padBottom(5).row();
         add(keeperLabel).left().padLeft(10).row();
+        add(new Label("Current Rating", headerStyle)).left().padTop(10).row();
+        add(ratingLabel).left().padLeft(10).row();
+        add(new Label("Tourists This Week", headerStyle)).left().padTop(10).row();
+        add(weeklyTouristLabel).left().padLeft(10).row();
+
 
         pack();
     }
@@ -91,6 +102,9 @@ public class MapSummaryView extends Table {
         touristsWaitingLabel.setText("Waiting: " + touristsWaiting);
 
         keeperLabel.setText("Keepers: " + keepers);
+        ratingLabel.setText("Rating: " + String.format("%.2f", map.getCurrentAverageRating()));
+        weeklyTouristLabel.setText("Visited: " + map.getTotalTouristsThisWeek());
+
 
         pack();
     }
