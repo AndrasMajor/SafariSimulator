@@ -407,7 +407,7 @@ public class MapScreen extends InputAdapter implements Screen {
 
             if (object instanceof EntranceExitRoad) {
                 EntranceExitRoad road = (EntranceExitRoad) object;
-                System.out.println((road.isEntrance ? "Entrance" : "Exit") + " at: " + pos.getX() + "," + pos.getY());
+                //System.out.println((road.isEntrance ? "Entrance" : "Exit") + " at: " + pos.getX() + "," + pos.getY());
                 objectTexture = road.isEntrance ? entranceRoadTexture : exitRoadTexture;
             } else if (object instanceof Plant) {
                 if (((Plant) object).type == PlantType.Tree) objectTexture = treeTexture;
@@ -580,7 +580,7 @@ public class MapScreen extends InputAdapter implements Screen {
                     map.sellEntity(jeep);
                     return true;
                 }else if(entity instanceof Keeper keeper){
-                    map.sellEntity(keeper);
+                    map.sellKeeper(keeper);
                     return true;
                 }
 

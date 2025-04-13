@@ -335,6 +335,10 @@ public class Map {
         }
     }
 
+    public void sellKeeper(Keeper keeper) {
+        this.entities.remove(keeper);
+    }
+
     public void sellEntity(Entity entity) {
         this.entities.remove(entity);
         this.money += entity.price;

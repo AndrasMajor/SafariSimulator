@@ -296,8 +296,8 @@ public abstract class Animal extends Entity {
         int centerX = currentPos.getX();
         int centerY = currentPos.getY();
         // 7*7 square
-        for (int dx = -3; dx <= 3; dx++) {
-            for (int dy = -3; dy <= 3; dy++) {
+        for (int dx = -5; dx <= 5; dx++) {
+            for (int dy = -5; dy <= 5; dy++) {
                 int nx = centerX + dx;
                 int ny = centerY + dy;
 
