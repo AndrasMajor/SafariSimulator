@@ -84,6 +84,8 @@ public class MapScreen extends InputAdapter implements Screen {
     private Skin skin;
     public ShopContainer shopContainer;
     public SaveContainer saveContainer;
+    public WinningContainer winningContainer;
+    public LosingContainer losingContainer;
     private Minimap minimap;
 
     private TextButton pauseButton;
@@ -106,6 +108,8 @@ public class MapScreen extends InputAdapter implements Screen {
         map.pauseGameClock();
         shopContainer = new ShopContainer(new Skin(Gdx.files.internal("uiskin.json")), this);
         saveContainer = new SaveContainer(new Skin(Gdx.files.internal("uiskin.json")), this);
+        winningContainer = new WinningContainer(new Skin(Gdx.files.internal("uiskin.json")), this);
+        losingContainer = new LosingContainer(new Skin(Gdx.files.internal("uiskin.json")), this);
     }
 
     public MapScreen(Map loadedMap) {
@@ -496,6 +500,16 @@ public class MapScreen extends InputAdapter implements Screen {
         increasePriceButton.setVisible(map.canIncreaseTicketPrice());
         decreasePriceButton.setVisible(map.canDecreaseTicketPrice());
 
+        // === 4. check winning ===
+        if (map.isPlayerWinning() == -1 && !map.lost) {
+            map.won = true;
+            map.lost = true;
+            stage.addActor(losingContainer);
+        } else if (map.isPlayerWinning() == 1 && !map.won) {
+            map.won = true;
+            map.lost = true;
+            stage.addActor(winningContainer);
+        }
 
     }
 
