@@ -17,21 +17,21 @@ public class Main extends Game {
         main.newGameConteiner.easyButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                mapScreen = new MapScreen("easy");
+                mapScreen = new MapScreen("easy", Main.this);
                 setScreen(mapScreen);
             }
         });
         main.newGameConteiner.mediumButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                mapScreen = new MapScreen("medium");
+                mapScreen = new MapScreen("medium", Main.this);
                 setScreen(mapScreen);
             }
         });
         main.newGameConteiner.hardButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                mapScreen = new MapScreen("hard");
+                mapScreen = new MapScreen("hard", Main.this);
                 setScreen(mapScreen);
             }
         });

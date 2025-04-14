@@ -19,7 +19,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
-
+import safariSimulator.main.Views.Main;
 
 import safariSimulator.main.Models.Entity.Animal.Animal;
 import safariSimulator.main.Models.Entity.Animal.Carnivore.Hyena;
@@ -75,6 +75,7 @@ public class MapScreen extends InputAdapter implements Screen {
     private float zoomSpeed = 0.02f;
 
     public Stage stage;
+    public TextButton backToMenuButton;
     public TextButton shopButton;
     public TextButton exitButton;
     public TextButton roadModeToggle;
@@ -88,6 +89,9 @@ public class MapScreen extends InputAdapter implements Screen {
     public LosingContainer losingContainer;
     private Minimap minimap;
 
+    public MainScreen mainScreen;
+    private Main main;
+
     private TextButton pauseButton;
     private TextButton speedButton;
     private Label dateLabel;
@@ -100,7 +104,8 @@ public class MapScreen extends InputAdapter implements Screen {
     private boolean summaryVisible = true;
 
 
-    public MapScreen(String level) {
+    public MapScreen(String level, Main main) {
+        this.main = main;
         map = new Map(level);
         map.generateMap();
         map.generatePlants();
@@ -194,9 +199,17 @@ public class MapScreen extends InputAdapter implements Screen {
                 stage.addActor(saveContainer);
             }
         });
+        backToMenuButton = new TextButton("Back to Menu", skin);
+        backToMenuButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                main.setScreen(mainScreen);
+            }
+        });
 
         bottomBar.add(shopButton).pad(10).width(150).height(50).left();
         bottomBar.add(exitButton).pad(10).width(150).height(50).left();
+        //bottomBar.add(backToMenuButton).pad(10).width(150).height(50).left();
         stage.addActor(bottomBar);
         Skin skin = new Skin(Gdx.files.internal("uiskin.json"));
 

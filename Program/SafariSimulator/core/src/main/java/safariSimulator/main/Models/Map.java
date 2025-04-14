@@ -36,8 +36,8 @@ public class Map {
     public String savingFileName;
     public String level;
     private ScheduledExecutorService scheduler;
-    public int grassPrice = 30;
-    public int waterPrice = 30;
+    public int grassPrice = 10;
+    public int waterPrice = 10;
     private int totalTouristsThisWeek = 0;
     public boolean won = false;
     public boolean lost = false;
@@ -69,7 +69,7 @@ public class Map {
         tiles = new ArrayList<>();
         objects = new ArrayList<>();
         entities = new ArrayList<>();
-        money = 1000000;
+        money = 2500;
         level = "default";
         gameClock = new GameClock(LocalDateTime.now());
         initScheduler();
@@ -79,7 +79,7 @@ public class Map {
         tiles = new ArrayList<>();
         objects = new ArrayList<>();
         entities = new ArrayList<>();
-        money = 31000;
+        money = 2500;
         this.level = level;
         gameClock = new GameClock(LocalDateTime.now());
         initScheduler();
@@ -639,7 +639,7 @@ public class Map {
         weeklyRatings.add(averageRating);
         currentWeekRatings.clear();
 
-        if (totalTouristsThisWeek >= (30 * ticketPriceLevel) && averageRating >= 3.5) {
+        if (totalTouristsThisWeek >= (100 * ticketPriceLevel) && averageRating >= 3.5) {
             raisePrice = true;
         } else {
             raisePrice = false;
@@ -862,15 +862,15 @@ public class Map {
     public int isPlayerWinning() {
         switch (level) {
             case "easy":
-                if (money >= 1000000) return 1;
+                if (money >= 10000) return 1;
                 else if (money <= 0) return -1;
                 else return 0;
             case "medium":
-                if (money >= 20000) return 1;
+                if (money >= 15000) return 1;
                 else if (money <= 0) return -1;
                 else return 0;
             case "hard":
-                if (money >= 30000) return 1;
+                if (money >= 20000) return 1;
                 else if (money <= 0) return -1;
                 else return 0;
             default:
