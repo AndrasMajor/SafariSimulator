@@ -17,7 +17,7 @@ public class Keeper extends Human {
     public Keeper() {}
     public Keeper(Point pos) {
         super(pos);
-        this.price = 4;
+        this.price = 1;
         this.speed = 8;
         targetPoint = pos;
     }

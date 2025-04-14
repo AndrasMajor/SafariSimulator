@@ -76,17 +76,17 @@ public class ShopContainer extends Window {
         Label hyenaPrice = new Label("50$", skin);
         Label zebraPrice = new Label("50$", skin);
         Label elephantPrice = new Label("100$", skin);
-        Label roadPrice = new Label("80$", skin);
+        Label roadPrice = new Label("80$", skin); //nincs fent a konténeren
         Label jeepPrice = new Label("50$", skin);
-        Label keeperPrice = new Label("100$/day", skin);
+        Label keeperPrice = new Label("24$/day", skin);
         Label grassPrice = new Label("30$", skin);
         Label treePrice = new Label("40$", skin);
-        Label bushPrice = new Label("30$", skin);
-        Label waterPrice = new Label("30$", skin);
+        Label bushPrice = new Label("10$", skin);
+        Label waterPrice = new Label("10$", skin);
 
         for (Label label : new Label[]{
             lionPrice, hyenaPrice, zebraPrice, elephantPrice,
-            roadPrice, jeepPrice, grassPrice, treePrice,
+            roadPrice, keeperPrice, jeepPrice, grassPrice, treePrice,
             bushPrice, waterPrice}) {
             label.setFontScale(1.0f);
             label.setColor(0,1f,0,1f);
@@ -127,7 +127,7 @@ public class ShopContainer extends Window {
         table.row();
 
         // Vehicles and roads row
-        table.add(roadButton).pad(10);
+        //table.add(roadButton).pad(10);
         table.add(jeepButton).pad(10);
         table.add(keeperButton).pad(10);
         table.add(waterButton).pad(10);
@@ -135,7 +135,7 @@ public class ShopContainer extends Window {
 
         table.row();
 
-        table.add(roadPrice).padTop(5).padBottom(5).center();
+        //table.add(roadPrice).padTop(5).padBottom(5).center();
         table.add(jeepPrice).padTop(5).padBottom(5).center();
         table.add(keeperPrice).padTop(5).padBottom(5).center();
         table.add(waterPrice).padTop(5).padBottom(5).center();
