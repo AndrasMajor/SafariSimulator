@@ -862,7 +862,7 @@ public class Map {
     public int isPlayerWinning() {
         switch (level) {
             case "easy":
-                if (money >= 10000) return 1;
+                if (money >= 1000000) return 1;
                 else if (money <= 0) return -1;
                 else return 0;
             case "medium":
