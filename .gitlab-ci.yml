@@ -15,7 +15,8 @@ build:
     paths:
       - Program/SafariSimulator/build
       - .gradle
-
+      - echo "=== JUnit XML tartalma ==="
+      - cat core/build/test-results/test/TEST-MapTest.xml || echo "Nincs tesztfájl"
 test:
   stage: test
   script:
