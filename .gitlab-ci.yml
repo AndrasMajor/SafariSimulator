@@ -26,7 +26,7 @@ test:
   artifacts:
     when: always
     reports:
-      junit: core/build/test-results/test/TEST-*.xml
+      junit: core/build/test-results/test/binary/TEST-*.xml
     expire_in: 1 week
   cache:
     key: "$CI_COMMIT_REF_NAME"
