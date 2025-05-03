@@ -17,6 +17,14 @@ public class GameClock {
         this.paused = false;
         startClock();
     }
+    public GameClock(String startTime, float incrementPerTickSeconds, boolean paused) {
+        this.gameTime = LocalDateTime.parse(startTime);
+        long fullSeconds = (long) incrementPerTickSeconds;
+        long nanos = (long) ((incrementPerTickSeconds % 1) * 1_000_000_000);
+        this.incrementPerTick = Duration.ofSeconds(fullSeconds, nanos);
+        this.paused = paused;
+        startClock();
+    }
 
     private void startClock() {
         scheduler = Executors.newSingleThreadScheduledExecutor();

@@ -44,20 +44,20 @@ public class Map {
 
 
     // tourist based vars
-    private static final double DEFAULT_RATING = 2.5;
-    private List<Jeep> availableJeeps = new ArrayList<>();
-    private List<Double> weeklyRatings = new ArrayList<>();
-    private int ticketPriceLevel = 1; // 1: 20, 2: 40, 3: 80, 4: 160
-    private boolean raisePrice = false;
-    private boolean lowerPrice = false;
-    private int touristWeekCounter = 0;
-    private Random random = new Random();
-    private long totalGameHours = 0; // Accumulates in-game hours
-    private final List<Tourist> waitingTouristList = new ArrayList<>();
-    private int nextTouristId = 0;
-    private final List<Double> currentWeekRatings = new ArrayList<>();
-    private double cumulativeRating = 2.5;
-    private int ratingCount = 1;
+    public static final double DEFAULT_RATING = 2.5;
+    public List<Jeep> availableJeeps = new ArrayList<>();
+    public List<Double> weeklyRatings = new ArrayList<>();
+    public int ticketPriceLevel = 1; // 1: 20, 2: 40, 3: 80, 4: 160
+    public boolean raisePrice = false;
+    public boolean lowerPrice = false;
+    public int touristWeekCounter = 0;
+    public Random random = new Random();
+    public long totalGameHours = 0; // Accumulates in-game hours
+    public final List<Tourist> waitingTouristList = new ArrayList<>();
+    public int nextTouristId = 0;
+    public final List<Double> currentWeekRatings = new ArrayList<>();
+    public double cumulativeRating = 2.5;
+    public int ratingCount = 1;
 
 
 
@@ -89,10 +89,27 @@ public class Map {
         tiles = mapState.tiles;
         objects = mapState.objects;
         entities = mapState.entities;
+        gameClock = new GameClock(mapState.gameClockTimeString, mapState.incrementPerTickSeconds, mapState.clockPaused);
         money = mapState.money;
-        gameClock = new GameClock(LocalDateTime.parse(mapState.timeString));
         savingFileName = mapState.savingFileName;
         level = mapState.level;
+        grassPrice = mapState.grassPrice;
+        waterPrice = mapState.waterPrice;
+        totalTouristsThisWeek = mapState.totalTouristsThisWeek;
+        won = mapState.won;
+        lost = mapState.lost;
+
+        availableJeeps = mapState.availableJeeps;
+        weeklyRatings = mapState.weeklyRatings;
+        ticketPriceLevel = mapState.ticketPriceLevel;
+        raisePrice = mapState.raisePrice;
+        lowerPrice = mapState.lowerPrice;
+        touristWeekCounter = mapState.touristWeekCounter;
+        totalGameHours = mapState.totalGameHours;
+        nextTouristId = mapState.nextTouristId;
+        cumulativeRating = mapState.cumulativeRating;
+        ratingCount = mapState.ratingCount;
+
         initScheduler();
     }
     // -------------------------------------

@@ -15,6 +15,8 @@ public class Mover {
         this.progress = 0;
     }
 
+    public Mover() {} /// load-hoz
+
     public void update(float delta) {
         progress += delta / duration;
         progress = Math.min(progress, 1f);

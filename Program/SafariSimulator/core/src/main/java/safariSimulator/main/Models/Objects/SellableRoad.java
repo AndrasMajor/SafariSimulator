@@ -12,6 +12,8 @@ public class SellableRoad extends Road {
         this.sellable = true;
     }
 
+    public SellableRoad() {} /// load-hoz
+
     public void rotateClockwise() {
         roadType = roadType.next();
         this.direction = new RoadDirection[]{roadType.getFrom(), roadType.getTo()};

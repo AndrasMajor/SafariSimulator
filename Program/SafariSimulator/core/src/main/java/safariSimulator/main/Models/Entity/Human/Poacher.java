@@ -24,6 +24,8 @@ public class Poacher extends Human {
         this.startPont = p;
     }
 
+    public Poacher() {} /// load-hoz
+
     public void chooseTarget(List<Entity> entities) {
         Entity target;
         do {
