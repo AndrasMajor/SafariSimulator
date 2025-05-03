@@ -20,8 +20,6 @@ test:
   script:
     - cd Program/SafariSimulator
     - gradle check
-    - echo "=== JUnit XML tartalma ==="
-    - cat ./Program/SafariSimulator/core/build/test-results/test/binary/TEST-MapTest.xml || echo "Nincs tesztfájl"
   artifacts:
     when: always
     reports:
