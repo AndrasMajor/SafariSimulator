@@ -23,18 +23,17 @@ test:
     - gradle check
     - echo "=== Tartalom kilistázása a core/build/test-results/test könyvtárból ==="
     - ls -l core/build/test-results/test || echo "Nincs ilyen mappa"
+  artifacts:
+    when: always
+    reports:
+      junit: core/build/test-results/test/TEST-*.xml
+    expire_in: 1 week
   cache:
     key: "$CI_COMMIT_REF_NAME"
     policy: pull
     paths:
       - Program/SafariSimulator/build
       - .gradle
-  artifacts:
-    when: always
-    reports:
-      junit:
-        - Program/SafariSimulator/build/test-results/test/TEST-*.xml
-    expire_in: 1 week
 
 deploy:
   stage: deploy
