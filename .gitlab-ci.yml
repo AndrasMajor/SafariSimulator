@@ -27,6 +27,12 @@ test:
     paths:
       - Program/SafariSimulator/build
       - .gradle
+  artifacts:
+    when: always
+    reports:
+      junit:
+        - Program/SafariSimulator/build/test-results/test/TEST-*.xml
+    expire_in: 1 week
 
 deploy:
   stage: deploy
