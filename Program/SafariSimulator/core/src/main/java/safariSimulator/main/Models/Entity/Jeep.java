@@ -13,13 +13,13 @@ import java.util.List;
  */
 public class Jeep extends Entity {
 
-    private final int maintenanceCost = 50;
-    private final int range = 6;
+    public final int maintenanceCost = 50;
+    public final int range = 6;
 
-    private int impressLevel;
-    private double rating; // Average rating of this tour
-    private int passengerCount = 0;
-    private Point previousPos;
+    public int impressLevel;
+    public double rating; // Average rating of this tour
+    public int passengerCount = 0;
+    public Point previousPos;
     public int roadNumber;
 
     public Jeep(Point pos) {
@@ -27,6 +27,8 @@ public class Jeep extends Entity {
         this.price = 50;
         this.rating = 0;
     }
+
+    public Jeep() {} /// load-hoz
 
     /**
      * Start a new tour with tourists of given impress level and count.
