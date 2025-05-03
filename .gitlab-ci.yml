@@ -21,11 +21,11 @@ test:
     - cd Program/SafariSimulator
     - gradle check
     - echo "=== JUnit XML tartalma ==="
-    - cat ./Program/SafariSimulator/core/build/test-results/test/TEST-MapTest.xml || echo "Nincs tesztfájl"
+    - cat ./Program/SafariSimulator/core/build/test-results/test/binary/TEST-MapTest.xml || echo "Nincs tesztfájl"
   artifacts:
     when: always
     reports:
-      junit: ./Program/SafariSimulator/core/build/test-results/test/TEST-MapTest.xml
+      junit: ./Program/SafariSimulator/core/build/test-results/test/binary/TEST-MapTest.xml
     expire_in: 1 week
   cache:
     key: "$CI_COMMIT_REF_NAME"
