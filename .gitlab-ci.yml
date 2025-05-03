@@ -15,18 +15,15 @@ build:
     paths:
       - Program/SafariSimulator/build
       - .gradle
-
 test:
   stage: test
   script:
     - cd Program/SafariSimulator
     - gradle check
-    - echo "=== Tartalom kilistázása a core/build/test-results/test könyvtárból ==="
-    - ls -l core/build/test-results/test || echo "Nincs ilyen mappa"
   artifacts:
     when: always
     reports:
-      junit: core/build/test-results/test/binary/TEST-*.xml
+      junit: ./Program/SafariSimulator/core/build/test-results/test/TEST-*.xml
     expire_in: 1 week
   cache:
     key: "$CI_COMMIT_REF_NAME"
