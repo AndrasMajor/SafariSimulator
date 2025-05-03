@@ -21,8 +21,6 @@ test:
   script:
     - cd Program/SafariSimulator
     - gradle check
-    - echo "=== Tartalom kilistázása a core/build/test-results/test könyvtárból ==="
-    - ls -l core/build/test-results/test || echo "Nincs ilyen mappa"
   artifacts:
     when: always
     reports:
