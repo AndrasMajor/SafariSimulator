@@ -47,7 +47,11 @@ public class Map {
     public static final double DEFAULT_RATING = 2.5;
     public List<Jeep> availableJeeps = new ArrayList<>();
     public List<Double> weeklyRatings = new ArrayList<>();
-    public int ticketPriceLevel = 1; // 1: 20, 2: 40, 3: 80, 4: 160
+    public int ticketPriceLevel = 1;
+    public HashMap<Integer, Integer> ticketPrices = new HashMap<Integer, Integer>(){{put(1, 20);
+                                                                                    put(2, 40);
+                                                                                    put(3, 80);
+                                                                                    put(4, 160);}};
     public boolean raisePrice = false;
     public boolean lowerPrice = false;
     public int touristWeekCounter = 0;
@@ -79,8 +83,21 @@ public class Map {
         tiles = new ArrayList<>();
         objects = new ArrayList<>();
         entities = new ArrayList<>();
-        money = 2500;
         this.level = level;
+        switch (level) {
+            case "easy":
+                money = 3000;
+                break;
+            case "medium":
+                money = 2500;
+                break;
+            case "hard":
+                money = 1500;
+                break;
+            case "default":
+                money = 2500;
+                break;
+        }
         gameClock = new GameClock(LocalDateTime.now());
         initScheduler();
     }
@@ -263,6 +280,7 @@ public class Map {
         int baseMin = 1 + (int)(avg * 1.5);  // e.g., 1–9
         int baseMax = 3 + (int)(avg * 2.0);  // e.g., 3–13
         int arriving = baseMin + random.nextInt(baseMax - baseMin + 1);
+        money += arriving * ticketPrices.get(ticketPriceLevel);
 
         for (int i = 0; i < arriving; i++) {
             waitingTouristList.add(new Tourist(nextTouristId++));
