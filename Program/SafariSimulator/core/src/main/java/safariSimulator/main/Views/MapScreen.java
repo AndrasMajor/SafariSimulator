@@ -121,6 +121,8 @@ public class MapScreen extends InputAdapter implements Screen {
         map = loadedMap;
         shopContainer = new ShopContainer(new Skin(Gdx.files.internal("uiskin.json")), this);
         saveContainer = new SaveContainer(new Skin(Gdx.files.internal("uiskin.json")), this);
+        winningContainer = new WinningContainer(new Skin(Gdx.files.internal("uiskin.json")), this);
+        losingContainer = new LosingContainer(new Skin(Gdx.files.internal("uiskin.json")), this);
     }
 
     @Override
@@ -518,10 +520,12 @@ public class MapScreen extends InputAdapter implements Screen {
             map.won = true;
             map.lost = true;
             stage.addActor(losingContainer);
+            map.pauseGameClock();
         } else if (map.isPlayerWinning() == 1 && !map.won) {
             map.won = true;
             map.lost = true;
             stage.addActor(winningContainer);
+            map.pauseGameClock();
         }
 
     }
