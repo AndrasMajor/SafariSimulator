@@ -123,4 +123,13 @@ public class ElephantTest {
         elephant.graze();
         assertEquals(100, elephant.getFoodLevel());
     }
+
+    @Test
+    public void testIsAlive(){
+        assertTrue(elephant.isAlive());
+        elephant.decreaseHealth(500);
+        assertFalse(elephant.isAlive());
+        elephant.increaseHealth(100);
+        assertTrue(elephant.isAlive());
+    }
 }
