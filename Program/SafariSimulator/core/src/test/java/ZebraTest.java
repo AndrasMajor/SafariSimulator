@@ -104,6 +104,23 @@ public class ZebraTest {
 
     @Test
     public void testMaxAgeAccess() {
-        assertTrue(zebra.getMaxAge() > 0);
+        assertEquals(500, zebra.getMaxAge());
+    }
+
+    @Test
+    public void testFood(){
+        assertEquals(100, zebra.getFoodLevel());
+        zebra.decreaseFoodLevel(20);
+        assertEquals(80, zebra.getFoodLevel());
+        zebra.decreaseFoodLevel(100);
+        assertEquals(0, zebra.getFoodLevel());
+        zebra.graze();
+        assertEquals(30, zebra.getFoodLevel());
+        zebra.graze();
+        zebra.graze();
+        zebra.graze();
+        zebra.graze();
+        zebra.graze();
+        assertEquals(100, zebra.getFoodLevel());
     }
 }

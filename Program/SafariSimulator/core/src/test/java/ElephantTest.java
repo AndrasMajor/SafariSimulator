@@ -72,7 +72,7 @@ public class ElephantTest {
 
     @Test
     public void testWaterMemoryUpdate() {
-        Tile tile = new Tile(new Point(0, 0), 100);
+        Tile tile = new Tile(new Point(0, 0), 0);
         assertTrue(elephant.getWaterMemory().isEmpty());
         elephant.updateWaterMemory(tile);
         List<Tile> memory = elephant.getWaterMemory();
@@ -104,6 +104,23 @@ public class ElephantTest {
 
     @Test
     public void testMaxAgeAccess() {
-        assertTrue(elephant.getMaxAge() > 0);
+        assertEquals(700, elephant.getMaxAge());
+    }
+
+    @Test
+    public void testFood(){
+        assertEquals(100, elephant.getFoodLevel());
+        elephant.decreaseFoodLevel(20);
+        assertEquals(80, elephant.getFoodLevel());
+        elephant.decreaseFoodLevel(100);
+        assertEquals(0, elephant.getFoodLevel());
+        elephant.graze();
+        assertEquals(30, elephant.getFoodLevel());
+        elephant.graze();
+        elephant.graze();
+        elephant.graze();
+        elephant.graze();
+        elephant.graze();
+        assertEquals(100, elephant.getFoodLevel());
     }
 }
