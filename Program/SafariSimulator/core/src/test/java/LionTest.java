@@ -21,7 +21,7 @@ public class LionTest {
 
     @Test
     public void testHerbivore() {
-        assertTrue(lion.isHerbivore());
+        assertFalse(lion.isHerbivore());
     }
 
     @Test
@@ -106,7 +106,7 @@ public class LionTest {
         lion.decreaseFoodLevel(100);
         assertEquals(0, lion.getFoodLevel());
         lion.hunt(new Zebra());
-        assertEquals(30, lion.getFoodLevel());
+        assertEquals(70, lion.getFoodLevel());
         lion.hunt(new Zebra());
         lion.hunt(new Zebra());
         lion.hunt(new Zebra());

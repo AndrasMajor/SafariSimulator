@@ -21,7 +21,7 @@ public class HyenaTest {
 
     @Test
     public void testHerbivore() {
-        assertTrue(hyena.isHerbivore());
+        assertFalse(hyena.isHerbivore());
     }
 
     @Test
@@ -106,7 +106,7 @@ public class HyenaTest {
         hyena.decreaseFoodLevel(100);
         assertEquals(0, hyena.getFoodLevel());
         hyena.hunt(new Zebra());
-        assertEquals(30, hyena.getFoodLevel());
+        assertEquals(70, hyena.getFoodLevel());
         hyena.hunt(new Zebra());
         hyena.hunt(new Zebra());
         hyena.hunt(new Zebra());
