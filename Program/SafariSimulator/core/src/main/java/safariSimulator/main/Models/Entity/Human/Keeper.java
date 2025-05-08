@@ -13,6 +13,7 @@ import java.util.*;
 public class Keeper extends Human {
     public Point targetPoint;
     public final int viewRange = 4;
+    public Entity targetEntity;
 
     public Keeper() {}
     public Keeper(Point pos) {
@@ -20,6 +21,7 @@ public class Keeper extends Human {
         this.price = 1;
         this.speed = 8;
         targetPoint = pos;
+        targetEntity = null;
     }
 
     public void chooseTargetPoint(List<Tile> tiles, List<Entity> entities) {
@@ -60,6 +62,20 @@ public class Keeper extends Human {
         return poacher;
     }
 
+    public boolean isCarnivoreInShootingRange(Carnivore carnivore) {
+        if (Math.abs(carnivore.pos.getX() - this.pos.getX()) <= 2 &&
+            Math.abs(carnivore.pos.getY() - this.pos.getY()) <= 2
+        ) {
+            return true;
+        }
+        return false;
+    }
+
+    public void setTarget(Carnivore target) {
+        this.targetEntity = target;
+    }
+
+
     public boolean isPoacherInShootingRange(List<Entity> entites) {
         Poacher poacher = getPoacher(entites);
         if (poacher == null) return false;
@@ -77,9 +93,21 @@ public class Keeper extends Human {
         return rand.nextDouble() < 0.5;
     }
 
+    public void shootCarnivore(Entity carnivore, Map map) {
+        map.sellEntity(carnivore);
+        this.targetEntity = null;
+        System.out.println("Pew Pew Pew!!");
+    }
 
 public void move(Map map) {
-    moveTowardsWithPathfinding(targetPoint, map.getTiles());
+    if(this.targetEntity != null) {
+        moveTowardsWithPathfinding(targetEntity.getPos(), map.getTiles());
+        if(isCarnivoreInShootingRange((Carnivore)targetEntity)){
+            shootCarnivore(targetEntity, map);
+        }
+    }else{
+        moveTowardsWithPathfinding(targetPoint, map.getTiles());
+    }
 }
 
 private void moveTowardsWithPathfinding(Point target, List<Tile> tiles) {

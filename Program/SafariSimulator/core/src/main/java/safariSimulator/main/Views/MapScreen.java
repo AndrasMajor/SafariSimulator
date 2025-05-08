@@ -19,6 +19,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
+import safariSimulator.main.Models.Entity.Animal.Carnivore.Carnivore;
 import safariSimulator.main.Views.Main;
 
 import safariSimulator.main.Models.Entity.Animal.Animal;
@@ -41,6 +42,7 @@ public class MapScreen extends InputAdapter implements Screen {
 
     public PlantType selectedPlantType = null;
     public int selectedTileType = 0;
+    private Keeper selectedKeeper = null;
     public RoadBuildType selectedRoadType = null;
     public final int TILE_SIZE = 64;
 
@@ -629,8 +631,20 @@ public class MapScreen extends InputAdapter implements Screen {
 
                 return true;
             }
-        }
+        }else{
+            Entity entity = map.getEntities().stream()
+                .filter(e -> e.getPos().getX() == pos.getX() && e.getPos().getY() == pos.getY())
+                .findFirst()
+                .orElse(null);
 
+            if (entity instanceof Keeper keeper) {
+                selectedKeeper = keeper;
+                System.out.println(selectedKeeper);
+            } else if (entity instanceof Carnivore carnivore && selectedKeeper != null) {
+                selectedKeeper.setTarget(carnivore);
+                selectedKeeper = null;
+            }
+        }
         return super.touchDown(screenX, screenY, pointer, button);
     }
 
