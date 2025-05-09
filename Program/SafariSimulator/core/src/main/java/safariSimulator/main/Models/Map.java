@@ -559,7 +559,7 @@ public class Map {
 
         if (animalCount == 0) return false;
 
-        double spawnChance = Math.min(animalCount / 10.0, 1.0);
+        double spawnChance = Math.min(animalCount / 50.0 * 0.2, 0.2);
         return random.nextDouble() < spawnChance;
     }
 

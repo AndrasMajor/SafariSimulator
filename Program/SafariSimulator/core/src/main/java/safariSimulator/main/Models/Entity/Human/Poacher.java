@@ -16,12 +16,14 @@ public class Poacher extends Human {
     public Animal target;
     public Point targetPoint;
     public Animal capturedAnimal;
+    public boolean isVisible;
 
     public Poacher(Map map, Point startPoint) {
         super(startPoint);
         chooseTarget(map.getEntities());
         Point p = new Point(startPoint.getX(), startPoint.getY());
         this.startPont = p;
+        isVisible = false;
     }
 
     public Poacher() {} /// load-hoz
