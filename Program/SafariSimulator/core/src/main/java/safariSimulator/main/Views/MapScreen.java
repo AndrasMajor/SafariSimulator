@@ -484,22 +484,25 @@ public class MapScreen extends InputAdapter implements Screen {
             Texture texture = getTextureFor(entity);
 
             // Rajzolás
-            if (scale != 1f || rotation != 0f) {
-                batch.draw(
-                    texture,
-                    drawX + 16 - scaledSize / 2f,
-                    drawY + 16 - scaledSize / 2f,
-                    scaledSize / 2f, scaledSize / 2f,
-                    scaledSize, scaledSize,
-                    1f, 1f,
-                    rotation,
-                    0, 0,
-                    texture.getWidth(), texture.getHeight(),
-                    false, false
-                );
-            } else {
-                batch.draw(texture, drawX, drawY, TILE_SIZE, TILE_SIZE);
+            if (!(entity instanceof Poacher) || ((Poacher) entity).isVisible) {
+                if (scale != 1f || rotation != 0f) {
+                    batch.draw(
+                        texture,
+                        drawX + 16 - scaledSize / 2f,
+                        drawY + 16 - scaledSize / 2f,
+                        scaledSize / 2f, scaledSize / 2f,
+                        scaledSize, scaledSize,
+                        1f, 1f,
+                        rotation,
+                        0, 0,
+                        texture.getWidth(), texture.getHeight(),
+                        false, false
+                    );
+                } else {
+                    batch.draw(texture, drawX, drawY, TILE_SIZE, TILE_SIZE);
+                }
             }
+
         }
 
 

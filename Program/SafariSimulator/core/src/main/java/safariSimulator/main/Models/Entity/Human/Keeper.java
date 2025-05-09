@@ -79,11 +79,21 @@ public class Keeper extends Human {
     public boolean isPoacherInShootingRange(List<Entity> entites) {
         Poacher poacher = getPoacher(entites);
         if (poacher == null) return false;
+
+        if (Math.abs(poacher.pos.getX() - this.pos.getX()) <= 5 &&
+            Math.abs(poacher.pos.getY() - this.pos.getY()) <= 5
+        ) {
+            poacher.isVisible = true;
+        } else {
+            poacher.isVisible = false;
+        }
+
         if (Math.abs(poacher.pos.getX() - this.pos.getX()) <= 2 &&
             Math.abs(poacher.pos.getY() - this.pos.getY()) <= 2
         ) {
             return true;
         }
+
         return false;
     }
 
