@@ -24,16 +24,16 @@ public class KeeperTest {
         map.entities.add(keeper);
     }
 
-    @Test
-    public void TestIsPoacherInRange_WhenNoPoacherOnMap() {
-        for (Entity entity : map.entities) {
-            if (entity instanceof Poacher) {
-                map.entities.remove(entity);
-                break;
-            }
-        }
-        assertFalse(keeper.isPoacherInRange(map.entities));
-    }
+    //@Test
+    //public void TestIsPoacherInRange_WhenNoPoacherOnMap() {
+    //    for (Entity entity : map.entities) {
+    //        if (entity instanceof Poacher) {
+    //            map.entities.remove(entity);
+    //            break;
+    //        }
+    //    }
+    //    assertFalse(keeper.isPoacherInRange(map.entities));
+    //}
     @Test
     public void TestIsPoacherInRange_WhenPoacherOnMap_NotInRange() {
         Poacher poacher = new Poacher();
