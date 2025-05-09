@@ -80,8 +80,8 @@ public class Keeper extends Human {
         Poacher poacher = getPoacher(entites);
         if (poacher == null) return false;
 
-        if (Math.abs(poacher.pos.getX() - this.pos.getX()) <= 5 &&
-            Math.abs(poacher.pos.getY() - this.pos.getY()) <= 5
+        if (Math.abs(poacher.pos.getX() - this.pos.getX()) <= 10 &&
+            Math.abs(poacher.pos.getY() - this.pos.getY()) <= 10
         ) {
             poacher.isVisible = true;
         } else {
