@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import safariSimulator.main.Models.Entity.Animal.Animal;
 import safariSimulator.main.Models.Entity.Animal.Carnivore.Lion;
 import safariSimulator.main.Models.Entity.Animal.Herbivore.Zebra;
+import safariSimulator.main.Models.Entity.Entity;
 import safariSimulator.main.Models.Entity.Human.Keeper;
 import safariSimulator.main.Models.Entity.Human.Poacher;
 import safariSimulator.main.Models.Entity.Jeep;
@@ -25,6 +26,12 @@ public class KeeperTest {
 
     @Test
     public void TestIsPoacherInRange_WhenNoPoacherOnMap() {
+        for (Entity entity : map.entities) {
+            if (entity instanceof Poacher) {
+                map.entities.remove(entity);
+                break;
+            }
+        }
         assertFalse(keeper.isPoacherInRange(map.entities));
     }
     @Test
