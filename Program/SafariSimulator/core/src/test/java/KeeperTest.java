@@ -25,6 +25,12 @@ public class KeeperTest {
 
     @Test
     public void TestIsPoacherInRange_WhenNoPoacherOnMap() {
+        for (Entity entity : map.entities) {
+            if (entity instanceof Poacher) {
+                map.entities.remove(entity);
+                break;
+            }
+        }
         assertFalse(keeper.isPoacherInRange(map.entities));
     }
     @Test
