@@ -110,6 +110,7 @@ public class Keeper extends Human {
     }
 
 public void move(Map map) {
+    if(!(map.entities.contains(targetEntity))) this.targetEntity = null;
     if(this.targetEntity != null) {
         moveTowardsWithPathfinding(targetEntity.getPos(), map.getTiles());
         if(isCarnivoreInShootingRange((Carnivore)targetEntity)){
