@@ -1,93 +1,573 @@
-# Safari Simulator
+# Plans
+<details>
+<summary>Class diagram</summary>
+![uml_diagram](uploads/6540b863d090e76989e33cc98a96d27c/uml_diagram.png)
+<h3>Updated class diagram<h3>
+![uml_diagram_updated](uploads/80da3248b6925c1605049632adb1762c/uml_diagram_updated.png)
+</details>
+
+<details>
+<summary>Use-Case diagram</summary>
+![use_case_dia](uploads/0e19110ae152932d0cbc390bc4107406/use_case_dia.png)
+</details>
+
+# Requirements
+<details>
+<summary>Functional Requirements</summary><br>
+
+
+# Main Menu:
+- It should be possible to start a new game.
+- It should be possible to exit the application.
+- It should be possible to load a saved game.
+- It should be possible to set the difficulty level.
+
+# Setup Phase:
+- It should be possible to exit the game.
+- It should be possible to return to the main menu (with or without saving).
+- It should be possible to open the in-game shop.
+- It should be possible to place plants and paths.
+- It should be possible to buy animals, jeeps and gamekeepers.
+- Purchased units can be sold in this phase with a 100% refund (only before starting the game).
+- It should be possible to start the simulation.
+
+# Simulation:
+- All functions of the setup phase should be available except for starting the game
+- After loading the game the selling mechanic has to change to 50% refund
+- Game speed has to be adjustable (pause, hours, days, weeks)/second
+- When money runs out game ends (defeat)
+- After reaching x amount of money game ends (victory)
+- When time runs out game ends (defeat)
+- User can save the actual state of the game after pressing exit button
+
+# Objects and NPCs
+
+## Animals
+### Herbivores
+- Herbivores move around the map randomly in groups if they can (max number of herd members is 10).
+- When Mating season is called if the group the animal is in meets the parameters new animals of the group's kind are spawned on the map.
+- A herd has to move in the general direction the oldest animal is moving to
+- When feeding or when they are chased animals move in their own direction and leave the group
+- When animal has no group and has an animal of the same species in sight they create a group the older animal dictates the general direction
+- Hunger bar has to decrease monotonously after X seconds
+- If Hunger bar is not full and plant type tile is in sight for animal it should move directly to the tile and eat until hunger bar is full
+- If Hunger Bar reaches zero hp of animal decreases each second
+- When damaged by carnivore or poacher hp of animal decreases
+- When Carnivore or Poacher is in sight move into opposite direction of carnivore
+- When hunger is full and health bar is not health starts to regenerate
+- When animal dies it leaves x amount of food value for carnivores to eat
+- When animal reaches certain age it dies.
+
+### Carnivores 
+- Carnivores move around the map randomly when healthy
+- Carnivores move in groups of maximum 5.
+- Carnivores move in the same general direction as the group leader (if in group) 
+- Hunger bar has to decrease monotonously after X seconds
+- If Hunger Bar reaches zero hp of animal decreases each second
+- When damaged by poacher hp of animal decreases
+- When Herbivore is in sight speed increases by 2 and carnivore starts to chase animal until it is out of sight or is eliminated
+- Carnivores eat from the prey they catch.
+- When carnivore has food in sight and the prey is not yet damaged the animals priority shifts to eating food
+- When hunger is full and health bar is not health starts to regenerate
+
+## Poachers
+- Has to spawn randomly on the edges of the map. 
+- When an animal is in sight starts to attack it until it eliminates the animal or the animal is out of sight.
+- When it is attacked by gamekeepers and health falls below 50% it starts to escape to the edge of the map where it despawns.
+
+## Gamekeepers 
+- Wander around the map randomly
+- When User clicks on gamekeeper is under Users controll (can be ordered to move to specific location or can be ordered to attack poacher.
+- Health of gamekeeper has to regenerate over time when it isn't full.
+- When Poacher is in sight auto gamekeeper attacks poacher until it is out of sight or dead.
+
+## Tourists
+- Travel in Jeeps on the road path built by the user in jeep
+- Happiness rating increases when tourist spots an animal.
+- Tourists only travel in Jeeps in designated road. 
+- They spawn in numbers equivalent to the popularity of the park that is calculated off of the average happiness of tourists.
+
+## Jeeps
+- Jeeps move on the road built.
+- Jeeps have to slow down when animal is in sight
+- Jeeps have to stop when animal moves across the road infront of them 
+- If all Jeeps are used no more tourists can enter the park.
+
+## Plants
+- If hp is not full it regenerates gradually
+- If herbivore is eating the plant hp decreases.
+- If Animal is on plant tile camo of animal increases
+</details>
 
 
 
-## Getting started
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
 
-## Add your files
+<details>
+<summary>Non-Functional Requirements</summary>
+<br>
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
+# Product Requirements
 
-```
-cd existing_repo
-git remote add origin https://szofttech.inf.elte.hu/szofttech-c-2025/group-03/safari-simulator.git
-git branch -M master
-git push -uf origin master
-```
+## Efficiency
 
-## Integrate with your tools
+- Minimal load on the processor, memory, and storage.
+- Fast response time to all inputs, even on low-end computers.
 
-- [ ] [Set up project integrations](https://szofttech.inf.elte.hu/szofttech-c-2025/group-03/safari-simulator/-/settings/integrations)
+## Reliability
 
-## Collaborate with your team
+- No errors occur during the default use of the game.
+- The game does not crash unexpectedly.
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
+## Security
 
-## Test and Deploy
+- The game does not connect to the internet and does not store personal data, making security concerns irrelevant.
 
-Use the built-in continuous integration in GitLab.
+## Portability
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+- Does require installation.
+- Guaranteed compatibility with Windows 8, 10, and 11, Linux, MacOS.
 
-***
+## Usability
 
-# Editing this README
+- The game interface is intuitive and easy to understand for anyone.
+- No external guides or instructions are necessary.
+- One user
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+## Management Requirements
 
-## Suggestions for a good README
+### Environmental
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+- The game does not integrate with or connect to any external services or softwares.
 
-## Name
-Choose a self-explaining name for your project.
+### Operational
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+- Usually medium runtime: 1-3 hours.
+- Frequent usage.
+- Designed for one user, with no specialized knowledge required.
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+### Development
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+- Programming language: Java.
+- Environment: jre.
+- Object-oriented paradigm.
+- Clean Code principles.
+- Unit Testing.
+- Git, GitLab.
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+## External Requirements
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+### Legal and Ethical Considerations
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+- The game's style and content do not harm the university's reputation.
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+</details>
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+# GUI
+<details>
+<summary>Wireframe</summary>
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+![Main_Menu](uploads/66bf43292454922c643e38ebe9c3609e/Main_Menu.png)
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+![New_Game](uploads/af95368b36fe7186ddcb090fa22dfa1b/In_Game.png)
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+![Load_Game](uploads/c43a675d330e6d526bf11d0509aeada5/Load_Game.png)
 
-## License
-For open source projects, say how it is licensed.
+![In_Game](uploads/03d241f40a8ef731df1e2f890e667dc1/In_Game.png)
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+![Shop](uploads/09f3f29e55957d2af6b07c8260b5a9d3/Shop.png)
+
+![Leave_Game](uploads/626f18c632492f73a252d12d3a149e05/Leave_Game.png)
+
+</details>
+
+<details>
+<summary>UI</summary>
+
+![Képernyőfotó_2025-05-25_-_15.07.11](uploads/54992931fce1dd02dabdb4bd27e9bfe6/Képernyőfotó_2025-05-25_-_15.07.11.png)
+
+![Képernyőfotó_2025-05-25_-_15.07.40](uploads/9fd6f1e3689fd79d0f2cc34eec5ea230/Képernyőfotó_2025-05-25_-_15.07.40.png)
+
+![Képernyőfotó_2025-05-25_-_15.07.48](uploads/2eb0d4514decb3facd45136c08838bb1/Képernyőfotó_2025-05-25_-_15.07.48.png)
+
+![Képernyőfotó_2025-05-25_-_15.07.53](uploads/bba615138bb070f345b933ba456550c4/Képernyőfotó_2025-05-25_-_15.07.53.png)
+
+![Képernyőfotó_2025-05-25_-_15.08.06](uploads/dddd8e6f6b36bb22a25394332df061ec/Képernyőfotó_2025-05-25_-_15.08.06.png)
+
+![Képernyőfotó_2025-05-25_-_15.07.58](uploads/cbac54e241f764bd99f0cddf90977314/Képernyőfotó_2025-05-25_-_15.07.58.png)
+
+</detauls>
+
+# User Stories
+<details>
+<summary>All Stories</summary>
+<details>
+  <summary><b>New Game</b></summary>
+
+<br>
+
+  **As a:** (current) player  <br>
+  **I want to:** start a new game 
+
+  |       |                                                           |
+  |-------|-----------------------------------------------------------|
+  | **Given** | The application is running, and the "New Game" button is visible |
+  | **When**  | The "New Game" button is clicked |
+  | **Then**  | The difficulty selection window appears|
+
+<br>
+
+  |       |                                                           |
+  |-------|-----------------------------------------------------------|
+  | **Given** | The difficulty selection window is visible |
+  | **When**  | A difficulty option is selected and the "Start" button is clicked |
+  | **Then**  | A newly generated game board appears in its initial state, and the game begins |
+
+</details>
+
+<br>
+
+<details>
+  <summary><b>Load Game</b></summary>
+
+<br>
+
+  **As a:** (current) player  <br>
+  **I want to:** load a saved game 
+
+  |       |                                                           |
+  |-------|-----------------------------------------------------------|
+  | **Given** | The application is running, the "Load Game" button is visible, and there is at least one previously saved game stored in the memory |
+  | **When**  | The "Load Game" button is clicked |
+  | **Then**  | A new window appears with a list of previously saved games |
+
+  |       |                                                           |
+  |-------|-----------------------------------------------------------|
+  | **Given** | The window with the list of previously saved games is active |
+  | **When**  | The selected map is clicked |
+  | **Then**  | The previously saved game state and map are loaded, and the game resumes from where it was left off |
+
+</details>
+
+<br>
+
+<details>
+  <summary><b>Exit Game</b></summary>
+
+<br>
+
+  **As a:** (current) player <br>
+  **I want to:** exit the game  
+
+  |       |                                                           |
+  |-------|-----------------------------------------------------------|
+  | **Given** | The game is running |
+  | **When**  | The "Exit" button is clicked |
+  | **Then**  | A confirmation dialog appears with the choices of "Save" or "Exit" |
+
+<br>
+
+  |       |                                                           |
+  |-------|-----------------------------------------------------------|
+  | **Given** | The confirmation dialog about exiting the game is active |
+  | **When**  | The "Exit" button is clicked |
+  | **Then**  | The game closes |
+
+</details>
+
+
+<br>
+
+
+<details>
+  <summary><b>Save Game</b></summary>
+
+<br>
+
+  **As a:** (current) player <br>
+  **I want to:** save the game  
+
+  |       |                                                           |
+  |-------|-----------------------------------------------------------|
+  | **Given** | The game is running |
+  | **When**  | The "Exit" button is clicked |
+  | **Then**  | A confirmation dialog appears with the choices of "Save" or "Exit"  |
+
+<br>
+
+  |       |                                                           |
+  |-------|-----------------------------------------------------------|
+  | **Given** | The confirmation dialog about exiting the game is active |
+  | **When**  | The "Save" button is clicked |
+  | **Then**  | The game closes |
+
+</details>
+
+<br>
+
+<details>
+  <summary><b>Pause Game</b></summary>
+
+<br>
+
+  **As a:** (current) player  <br>
+  **I want to:** pause the game
+
+  |       |                                                           |
+  |-------|-----------------------------------------------------------|
+  | **Given** | The game is running |
+  | **When**  | The "Pause" button is clicked |
+  | **Then**  | The game pauses (the timer and the entities stop) |
+
+</details>
+
+<br>
+
+<details>
+  <summary><b>Resume Game</b></summary>
+
+<br>
+
+  **As a:** (current) player  <br>
+  **I want to:** resume the game
+
+  |       |                                                           |
+  |-------|-----------------------------------------------------------|
+  | **Given** | The game is paused |
+  | **When**  | The "Resume" button is clicked |
+  | **Then**  | The game resumes (the timer and the entities continue) |
+
+</details>
+
+<br>
+
+<details>
+  <summary><b>Change Speed</b></summary>
+
+<br>
+
+  **As a:** (current) player  <br>
+  **I want to:** change the speed of the game
+
+  |       |                                                           |
+  |-------|-----------------------------------------------------------|
+  | **Given** | The game is running |
+  | **When**  | The "Change Speed" button is clicked |
+  | **Then**  | The speed of the game changes (slow -> medium -> fast -> slow -> ...) |
+
+</details>
+
+<br>
+
+<details>
+  <summary><b>Open Shop</b></summary>
+
+<br>
+
+  **As a:** (current) player  <br>
+  **I want to:** open the shop
+
+  |       |                                                           |
+  |-------|-----------------------------------------------------------|
+  | **Given** | The game is running and the Shop window is closed |
+  | **When**  | The "Shop" button is clicked |
+  | **Then**  | The Shop window appears |
+
+</details>
+
+<br>
+
+<details>
+  <summary><b>Close Shop</b></summary>
+
+<br>
+
+  **As a:** (current) player  <br>
+  **I want to:** close the shop
+
+  |       |                                                           |
+  |-------|-----------------------------------------------------------|
+  | **Given** | The game is running and the Shop window is open |
+  | **When**  | The "Close Shop" button is clicked |
+  | **Then**  | The Shop window closes |
+
+</details>
+
+<br>
+
+<details>
+  <summary><b>Buy (and) Place Plant</b></summary>
+
+<br>
+
+  **As a:** (current) player  <br>
+  **I want to:** buy and place a plant
+
+  |       |                                                           |
+  |-------|-----------------------------------------------------------|
+  | **Given** | The Shop window is open |
+  | **When**  | The choosen plant is clicked, and we have the right amount of money to buy the selected plant |
+  | **Then**  | The plant is selected and Shop window closes|
+
+  |       |                                                           |
+  |-------|-----------------------------------------------------------|
+  | **Given** | The Shop window is closed and a plant is selected |
+  | **When**  | A valid tile is clicked (invalid tiles: rock, water, road, plants) |
+  | **Then**  | The plant is placed on the selected tile (the price of the plant is deducted from the money)|
+
+</details>
+
+<br>
+
+<details>
+  <summary><b>Buy (and) Place Animal</b></summary>
+
+<br>
+
+  **As a:** (current) player  <br>
+  **I want to:** buy and place a plant
+
+  |       |                                                           |
+  |-------|-----------------------------------------------------------|
+  | **Given** | The Shop window is open |
+  | **When**  | The choosen animal is clicked, and we have the right amount of money to buy the selected animal |
+  | **Then**  | The animal is selected and Shop window closes|
+
+  |       |                                                           |
+  |-------|-----------------------------------------------------------|
+  | **Given** | The Shop window is closed and a animal is selected |
+  | **When**  | A valid tile is clicked (invalid tiles: rock, water) |
+  | **Then**  | The animal is placed on the selected tile (the price of the animal is deducted from the money)|
+
+</details>
+
+<br>
+
+<details>
+  <summary><b>Buy (and) Place Keeper</b></summary>
+
+<br>
+
+  **As a:** (current) player  <br>
+  **I want to:** buy and place a plant
+
+  |       |                                                           |
+  |-------|-----------------------------------------------------------|
+  | **Given** | The Shop window is open |
+  | **When**  | The "Keeper" icon is clicked, and we have the right amount of money to buy the keeper |
+  | **Then**  | The keeper is selected and Shop window closes|
+
+  |       |                                                           |
+  |-------|-----------------------------------------------------------|
+  | **Given** | The Shop window is closed and the keeper is selected |
+  | **When**  | A valid tile is clicked (invalid tiles: rock, water) |
+  | **Then**  | The keeper is placed on the selected tile (the price of the keeper is deducted from the money)|
+
+</details>
+
+<br>
+
+<details>
+  <summary><b>Buy Jeep</b></summary>
+
+<br>
+
+  **As a:** (current) player  <br>
+  **I want to:** buy and place a jeep
+
+  |       |                                                           |
+  |-------|-----------------------------------------------------------|
+  | **Given** | The Shop window is open |
+  | **When**  | The Jeep icon is clicked, and we have the right amount of money to buy the jeep |
+  | **Then**  | The Jeep is added to the vehicles (the price is deducted from the money) |
+
+</details>
+
+ <br>
+
+<details>
+  <summary><b>Buy (and) Place Road</b></summary>
+
+<br>
+
+  **As a:** (current) player  <br>
+  **I want to:** buy and place a road
+
+  |       |                                                           |
+  |-------|-----------------------------------------------------------|
+  | **Given** | The Shop window is open |
+  | **When**  | The Road icon is clicked, and we have the right amount of money to buy the road |
+  | **Then**  | The Road is selected and the Shop window closes |
+
+  |       |                                                           |
+  |-------|-----------------------------------------------------------|
+  | **Given** | The Shop window is closed and the road is selected |
+  | **When**  | A valid tile is clicked (invalid tiles: rock, water, road) |
+  | **Then**  | The road is placed on the selected tile (the price of the road is deducted from the money)
+
+</details>
+
+<br>
+
+<details>
+  <summary><b>Sell an Entity</b></summary>
+
+<br>
+
+  **As a:** (current) player  <br>
+  **I want to:** sell an entity (animals, plants, roads, jeeps, lakes, keepers)
+
+  |       |                                                           |
+  |-------|-----------------------------------------------------------|
+  | **Given** | The game is running and the "Start Selling" button is visible |
+  | **When**  | The "Start Selling" button is clicked and then the selected entity is clicked on the map |
+  | **Then**  | The clicked entity is sold and is removed from the map, the price of the sold entity gets added to the money |
+
+</details>
+
+<br>
+<details>
+  <summary><b>Turn off selling mode</b></summary>
+
+<br>
+
+  **As a:** (current) player  <br>
+  **I want to:** turn off selling mode
+
+  |       |                                                           |
+  |-------|-----------------------------------------------------------|
+  | **Given** | The game is running, the selling mode is on and the "Stop Selling" button is visible |
+  | **When**  | The "Stop Selling" button is clicked |
+  | **Then**  | The selling mode is turned off |
+
+</details><br>
+</details>
+
+# Feasibility plans
+
+<details>
+<summary></summary> <br>
+
+## Human Resources  
+- Three designers/developers/testers  
+
+## Hardware Resources  
+- Three development computers (medium hardware requirements)  
+
+## Software Resources  
+- Development environment: InetelliJ IDEA, jrl
+- Engine: libgdx
+- Version control: Git  
+- Project management platform: GitLab  
+
+## Operations  
+- No operational support required  
+
+## Maintenance  
+- No maintenance required beyond potential bug fixes  
+
+## Implementation  
+- Duration:  
+- Cost: 
+</details>
