@@ -1,7 +1,7 @@
 # Plans
 <details>
 <summary>Class diagram</summary>
-![uml_diagram](SafariSimulator/diagrams/Class_UML_diagrams/uml_diagram.png)
+![uml_diagram](diagrams/Class_UML_diagrams/uml_diagram.png)
 <h3>Updated class diagram<h3>
 ![uml_diagram_updated](uploads/80da3248b6925c1605049632adb1762c/uml_diagram_updated.png)
 </details>
